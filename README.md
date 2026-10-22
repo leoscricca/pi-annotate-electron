@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/media/logo.svg" width="96" height="96" alt="Pi Annotate Electron — Orbit Mark with violet accent"></p>
+<p align="center"><img src="docs/media/logo.svg" width="96" height="96" alt="Pi Annotate Electron — Peach and Blue Orbit Mark"></p>
 
 # Pi Annotate Electron
 
@@ -146,10 +146,10 @@ npm test
 
 Native terminal regressions also need Python 3.9 or later, using its standard library. Tests use headless Chromium, hidden macOS Electron windows, fictional data, private temporary profiles, and offline Pi sessions. Host SDKs remain peers; pinned local development copies support isolated tests. Those checks do not establish foreground focus, Windows, packaged-app, or live-provider acceptance.
 
-To regenerate screenshots and the demo with the actual hidden sample, install `ffmpeg` and the headless Chromium dependency above, then run `npm run demo`. The current Orbit Mark combines three thin copper loops, a blue annotation bubble, and a violet accent dot. Original artwork is available as [SVG](docs/media/logo.svg) and [PNG](docs/media/logo.png). The [earlier concepts](docs/media/logo-options.png) remain available for reference.
+To regenerate screenshots and the demo with the actual hidden sample, install `ffmpeg` and the headless Chromium dependency above, then run `npm run demo`. The current Orbit Mark uses [Catppuccin Mocha](https://catppuccin.com/palette/): three thin Peach loops, a Blue annotation bubble, and a Mauve accent dot on a dark Base tile. Original artwork is available as [SVG](docs/media/logo.svg) and [PNG](docs/media/logo.png). The [earlier concepts](docs/media/logo-options.png) remain available for reference.
 
 See [release checks](docs/RELEASING.md), [verification records](docs/VERIFICATION.md), and [design provenance](design/DESIGN.md). Historical documents describe their original source versions.
 
 ## License
 
-[MIT](LICENSE), © 2026 Leonardo Scricca. The original logo is included under the same license. Pi Annotate, OpenChamber tokens, and functional icon assets retain their respective licenses and attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[MIT](LICENSE), © 2026 Leonardo Scricca. The original logo is included under the same license. Pi Annotate, OpenChamber tokens, Catppuccin palette colors, and functional icon assets retain their respective licenses and attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

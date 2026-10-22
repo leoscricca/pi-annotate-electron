@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
-  <title id="title">Pi Annotate Electron — Orbit Mark, violet accent</title>
-  <rect x="2" y="2" width="124" height="124" rx="30" fill="#1b1918"/>
-  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(-30 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
-  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(30 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
-  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(90 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
-  <path d="M48 44h31a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H63L48 92V82a8 8 0 0 1-7-8V52a8 8 0 0 1 7-8Z" fill="#479fe6" stroke="#1b1918" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M54 57h20M54 67h13" fill="none" stroke="#13212c" stroke-width="3.5" stroke-linecap="round"/>
-  <circle cx="103" cy="42" r="7" fill="#B292FF" stroke="#1b1918" stroke-width="3"/>
+  <title id="title">Pi Annotate Electron — Orbit Mark, Peach &amp; Blue</title>
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="#1e1e2e"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(-30 64 64)" fill="none" stroke="#fab387" stroke-width="2.5"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(30 64 64)" fill="none" stroke="#fab387" stroke-width="2.5"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(90 64 64)" fill="none" stroke="#fab387" stroke-width="2.5"/>
+  <path d="M48 44h31a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H63L48 92V82a8 8 0 0 1-7-8V52a8 8 0 0 1 7-8Z" fill="#89b4fa" stroke="#1e1e2e" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M54 57h20M54 67h13" fill="none" stroke="#11111b" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="103" cy="42" r="7" fill="#cba6f7" stroke="#1e1e2e" stroke-width="3"/>
 </svg>

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "files": {
+    "design/openchamber/tokens.css": "4a09a8fcceaca17497ff849b764baa300609c19bae38c8776030cec27e59ffd4",
+    "design/openchamber/tokens.json": "f6c0aa16029a88783ee4ce9a21ebac5684f248ea77fbe5a1921842a01e92ae83",
+    "design/openchamber/LICENSE.openchamber.txt": "1f6e869a3feff6b4eb07907afc89176562b1f4324389f163d9fd94f09864b44e",
+    "design/openchamber/LICENSE.remix-icon.txt": "6f2f21c5f8db34635d31848e9ff831d5dc421bb83ffc9d37f82651364047ae58",
+    "design/icons/arrow-down-s.svg": "16c92dfab723b99b17b89bdb926c90a18e4202d7cde78738f3989db82eb4726b",
+    "design/icons/close.svg": "62d9f5cc75d2003495e29b2aa68ce53550f8c03849da6e1b526f5d9a76764315",
+    "design/icons/fullscreen.svg": "4ef3249911d136e7046f5db7d36d1f1fbc63d5424196d92a09d63389cb153c84",
+    "design/icons/list-indefinite.svg": "f26e107f84cd2213e7a5a9eb3f5eeb2a9a75a95031b6bd85212e66949d39e68a",
+    "design/icons/pencil-ai.svg": "1acdf1dc29fc75a4d096d786acdd57cf9ade7d27566d64917df41a50dd651794",
+    "design/icons/search.svg": "3fe9019986ca607f5f6478fc7cf0033115ae023be99d3e15a9d9b5256e0902d2",
+    "design/icons/send-plane-2.svg": "cbf7c3fb88914e2b5278e2ccaa81e08c424d3774abcfd5284c7548dc7880a971",
+    "design/licenses/pi-annotate-MIT.txt": "2d20dfacd9742706e564470dc77438608a1e54b0ed46959f080709389209093c",
+    "tests/fixtures/legacy-synthetic-catalog.json": "ea49a79354e47e3c0e0420ffa662477dbba955b3cf4221391822358a06fc808c",
+    "scripts/electron-annotations/content-policy.js": "408fbeda1454f7d43b874a96ef1e4dfb5f3b503b8f85b8bbdae6c65b2704db36",
+    "scripts/electron-annotations/presentation.css": "4878e021c84161d82ad13a53f1fc5c075fa42291e56b2e07a51e5eda59bfaccb",
+    "tests/fixtures/sample-synthetic-states.json": "64070e7a63a754e696ac963778011fac959f21f00be9ff3864ba5fc70705acec"
+  },
+  "upstreamPicker": {
+    "package": "pi-annotate",
+    "version": "0.5.2",
+    "file": "node_modules/pi-annotate/chrome-extension/content.js",
+    "sha256": "a6833ff7e68d8b1572987079ddb82924bc9c148ff1fb9826134a4ccdce020d3d"
+  },
+  "legacyStates": 25,
+  "legacyControls": 36
+}

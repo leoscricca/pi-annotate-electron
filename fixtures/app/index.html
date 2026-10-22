@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" data-color-scheme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>Electron annotation synthetic workspace</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body data-preview-color-scheme="dark">
+  <aside class="fixture-sidebar">
+    <h1>Annotation sample</h1>
+    <p>Fictional controls. No product backend or live account.</p>
+    <button aria-label="New session">New session</button>
+    <button aria-label="Search sessions">Search sessions</button>
+    <button aria-label="Select Synthetic at Synthetic.mpr">Synthetic project</button>
+    <button aria-label="Collapse fictional Fable Shop sessions">Fictional sessions</button>
+    <button>Checkout summary spacing</button><button>Cart state transitions</button>
+    <button>Inventory warning copy</button><button>Order confirmation edge cases</button>
+    <button>Refund policy states</button>
+    <button id="sidebar-settings" aria-label="Settings">Settings</button>
+  </aside>
+  <main class="main-content-safe-area">
+    <header><button aria-label="Open sessions">Sessions</button><h2>Conversation</h2><button aria-label="Files">Files</button><button aria-label="Work status">Work status</button></header>
+    <section id="fixture-transcript" aria-live="polite"><p>This is a synthetic annotation fixture. No project inspection or model request occurred.</p></section>
+    <section class="composer-shell">
+      <div class="cm-editor"><div class="cm-scroller"><div class="cm-content" role="textbox" aria-label="Message composer" aria-multiline="true" contenteditable="true"></div></div></div>
+      <div class="composer-toolbar">
+        <button aria-label="Attach files">Attach files</button><button aria-label="Agent: Default">Default</button>
+        <button id="composer-model" aria-label="Model: Model unavailable">Model unavailable</button>
+        <button aria-label="Effort: Effort unavailable">Effort unavailable</button><button aria-label="Context usage unavailable">Context</button>
+        <button aria-label="Expand composer">Expand</button><button aria-label="Send offline test">Send offline test</button>
+      </div>
+    </section>
+  </main>
+  <aside class="fixture-context"><button aria-label="Close context panel">Close context panel</button><button aria-label="Expand context panel">Expand context panel</button><button>src folder</button><button>components folder</button><button>OrderReview.tsx</button><button>OrderSummary.tsx</button><button>Orders.tsx</button></aside>
+  <template id="fixture-menu-template"><div id="fixture-menu" role="menu"><div role="menuitem" tabindex="0">Manage Codex connection</div><div role="menuitem" tabindex="0">Keyboard shortcuts</div><div role="menuitem" tabindex="0">About CnC Mendix Agent</div></div></template>
+  <template id="fixture-settings-template"><section id="fixture-settings" role="dialog" aria-label="Settings">
+    <header><h2>Settings</h2><button id="sidebar-settings-dismiss" aria-label="Close Settings">Close Settings</button></header>
+    <p>Fictional account controls. No authentication operation is available.</p>
+    <button role="switch" aria-label="Light color scheme" aria-checked="false">Light color scheme</button>
+    <button><!--fixture-icon-->Connect Codex</button><button>Use saved app login</button><button>Start live session</button>
+  </section></template>
+  <script src="app.js"></script>
+</body>
+</html>

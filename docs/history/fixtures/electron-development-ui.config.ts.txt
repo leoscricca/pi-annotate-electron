@@ -1,0 +1,19 @@
+import { isAbsolute, join } from 'node:path'
+import { existsSync } from 'node:fs'
+import type { ConfigEnv } from 'vite'
+import rootConfig from '../../electron.vite.config'
+
+// Compile the real development branch without a foreground Vite/Electron launch.
+// The caller supplies a new owned output directory, never the ordinary out tree.
+export default function developmentUiFixtureConfig(env: ConfigEnv) {
+  const output = process.env.CNC_DEV_UI_FIXTURE_OUTPUT
+  if (!output || !isAbsolute(output) || !existsSync(join(output, '.owned-dev-ui-fixture'))) {
+    throw new Error('DEV_UI_FIXTURE_OUTPUT_REFUSED')
+  }
+  const config = rootConfig({ ...env, command: 'serve' })
+  for (const [name, part] of Object.entries(config)) {
+    if (name !== 'main' && name !== 'preload' && name !== 'renderer') continue
+    if (part && typeof part === 'object') part.build = { ...part.build, outDir: join(output, name) }
+  }
+  return config
+}

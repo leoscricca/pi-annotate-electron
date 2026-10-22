@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "states": [
+    "27a6ac22d7c51c43a0d962ef2d089bc66d044adf1794053fe7dba4bf81d4b7a2",
+    "3a2bce005c484bd9c777de450d30cf8c2bcc6eba88018b122c3373bdd8dbc043",
+    "43cb9989c1d1ac43129afdd775f3c02ed707d7e48fc4e727bba251701fa78d5c",
+    "4ab8b93b2321eda8e19e9a54146412aa36302563875231cdeafa0a0c9a42b2d0",
+    "70ed02d1be9b09224230b12d85f278051d6de818558bdfd2ac8dd61164106d32",
+    "b5844821dc7d2507839c59231b501aa76ed602e790768024abb7e64f6a00f63f",
+    "cdaa46d4cdb9b02fa79bae271c2bad904dd432fd19e7e1e877e27cb33f888b35",
+    "faa72903084a39bcee89c524297508d5cfdab4a7c85ab44fdbe4b6d99cbc3619"
+  ],
+  "controls": [
+    "Light color scheme"
+  ],
+  "sourceFiles": {
+    "fixtures/app/app.css": "1c1236b76ac89931d5a71b9831f553ee4b5a30cfe04141c62d231e56d830d2b0",
+    "fixtures/app/app.js": "36601acfea6f94f76a37e0c474f7427779f48e02e06c753b04bd8306dc619a91",
+    "fixtures/app/index.html": "c2346add6002e6609b8f17b710ebefc7948c463bc491dc775a6df96cfcb84dad",
+    "fixtures/app/main.mjs": "aba9d355468f1249f2cba8d89adb16c8b56f30018358c21f8575f83734a78e34",
+    "fixtures/app/preload.cjs": "c010505b82395b64a73cc76964298ca31c40c572f1e0993c754c61c4857e8c9d",
+    "scripts/build-fixture.mjs": "f1888b2325aa426258109df99f2898ff7e9f39ed0d6f627da4adc76daed6bd0f",
+    "tests/fixtures/electron-annotation-catalog.cjs": "0ed8bf99538b47cbed2109fa4c150634073c7659f9a2b4006c1929c6f61bd374"
+  }
+}

@@ -1,0 +1,96 @@
+/* OpenChamber application tokens. Scope overrides to picker-owned elements only. */
+:is(#pi-panel, .pi-note-card, #pi-highlight, #pi-tooltip, #pi-markers, .pi-connectors) {
+  --pi-bg-body: var(--surface-background);
+  --pi-bg-card: var(--surface-elevated);
+  --pi-bg-elevated: var(--surface-subtle);
+  --pi-bg-selected: var(--interactive-selection);
+  --pi-bg-hover: var(--interactive-hover);
+  --pi-fg: var(--surface-foreground);
+  --pi-fg-muted: var(--surface-muted-foreground);
+  --pi-fg-dim: var(--surface-muted-foreground);
+  --pi-accent: var(--status-info-text);
+  --pi-accent-hover: var(--status-info-text);
+  --pi-accent-muted: var(--status-info-background);
+  --pi-border: var(--interactive-border);
+  --pi-border-muted: var(--interactive-border);
+  --pi-border-focus: var(--interactive-border-hover);
+  --pi-success: var(--status-info-text);
+  --pi-error: var(--status-error-text);
+  --pi-focus-ring: var(--interactive-focus-ring);
+  --pi-shadow: var(--surface-overlay);
+  --pi-font-ui: var(--font-sans);
+  --pi-font-mono: var(--font-mono);
+  --pi-radius: var(--radius-md);
+}
+#pi-panel, #pi-panel.pi-panel-bottom {
+  inset: auto auto 16px 50%;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%);
+  padding: 6px 8px;
+  border: 1px solid var(--interactive-border-hover);
+  border-radius: var(--radius-xl);
+  background: var(--surface-elevated);
+  color: var(--surface-foreground);
+  box-shadow: 0 8px 20px var(--surface-overlay);
+  font: var(--text-ui-label)/1.45 var(--font-sans);
+}
+#pi-panel .pi-header, #pi-panel .pi-panel-body { display: none; }
+#pi-panel .pi-cnc-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 8px; }
+#pi-panel .pi-cnc-brand { display: flex; gap: 8px; align-items: center; font-size: var(--text-ui-header); white-space: nowrap; }
+#pi-panel svg, .pi-note-card svg { width: 16px; height: 16px; fill: currentColor; pointer-events: none; flex: none; }
+#pi-panel .pi-cnc-brand svg { color: var(--primary-text); }
+#pi-panel button, .pi-note-card button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 28px; min-width: 28px; padding: 4px; border: 1px solid transparent;
+  border-radius: var(--radius-md); background: transparent; color: var(--surface-muted-foreground);
+  font: var(--text-ui-label)/1.45 var(--font-sans); cursor: default; opacity: 1;
+}
+#pi-panel button:hover, .pi-note-card button:hover { background: var(--interactive-hover); color: var(--surface-foreground); }
+#pi-panel button.active { background: var(--interactive-selection); color: var(--interactive-selection-foreground); }
+#pi-panel button:disabled, .pi-note-card button:disabled { opacity: .45; }
+#pi-panel button:focus-visible, .pi-note-card :is(button, select, textarea):focus-visible {
+  outline: 2px solid var(--interactive-focus); outline-offset: 2px;
+}
+#pi-panel #pi-submit {
+  height: 32px; padding: 4px 10px; color: var(--primary-text);
+  background: color-mix(in srgb, var(--primary-base) 12%, var(--surface-background));
+}
+#pi-panel #pi-submit:hover { background: color-mix(in srgb, var(--primary-base) 20%, var(--surface-background)); }
+#pi-panel #pi-count { min-width: 58px; color: var(--surface-muted-foreground); font: var(--text-meta)/1.45 var(--font-sans); }
+.pi-note-card {
+  width: 332px; max-width: calc(100vw - 16px); border-radius: var(--radius-xl);
+  background: var(--surface-elevated); color: var(--surface-foreground);
+  border: 1px solid var(--interactive-border-hover); box-shadow: 0 12px 32px var(--surface-overlay);
+  font: var(--text-ui-label)/1.45 var(--font-sans);
+}
+.pi-note-card .pi-note-header { padding: 10px 12px; gap: 4px; background: transparent; border-bottom: 1px solid var(--interactive-border); }
+.pi-note-card .pi-note-badge { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--interactive-selection); color: var(--interactive-selection-foreground); font: var(--text-micro)/1.45 var(--font-sans); }
+.pi-note-card .pi-note-selector { color: var(--surface-foreground); font: var(--text-ui-label)/1.45 var(--font-sans); }
+.pi-note-card .pi-note-expand svg { transform: rotate(180deg); }
+.pi-note-card .pi-note-screenshot.active { color: var(--primary-text); background: color-mix(in srgb, var(--primary-base) 12%, var(--surface-background)); }
+.pi-note-card .pi-note-close:hover { color: var(--status-error-text); }
+.pi-note-card .pi-note-body { padding: 12px; }
+.pi-note-card .pi-cnc-feedback-label { display: block; color: var(--surface-muted-foreground); font: var(--text-meta)/1.45 var(--font-sans); }
+.pi-note-card .pi-note-textarea {
+  display: block; width: 100%; min-height: 86px; margin-top: 6px; padding: 10px;
+  background: var(--surface-background); color: var(--surface-foreground);
+  border: 1px solid var(--interactive-border-hover); border-radius: var(--radius-md);
+  font: var(--text-ui-label)/1.45 var(--font-sans); caret-color: var(--interactive-cursor);
+}
+.pi-note-card .pi-note-textarea::placeholder { color: var(--surface-muted-foreground); }
+.pi-note-card .pi-cnc-capture { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 12px 12px; font-size: var(--text-meta); }
+.pi-note-card select { height: 32px; max-width: 60%; padding: 4px 8px; color: var(--surface-foreground); background: var(--surface-background); border: 1px solid var(--interactive-border); border-radius: var(--radius-md); font: var(--text-meta)/1.45 var(--font-sans); }
+.pi-note-card .pi-cnc-review { padding: 10px 12px; border-top: 1px solid var(--interactive-border); color: var(--surface-muted-foreground); font-size: var(--text-micro); }
+.pi-note-card ::selection { background: var(--interactive-selection); color: var(--interactive-selection-foreground); }
+#pi-markers .pi-marker-badge { width: 22px; height: 22px; font: var(--text-micro)/1.45 var(--font-sans); }
+#pi-highlight { transition: none; }
+body:has(.pi-note-card:focus-within) #pi-tooltip { visibility: hidden; }
+svg.pi-connectors { display: none; }
+@media (pointer: coarse) {
+  #pi-panel button, .pi-note-card button { min-width: 44px; height: 44px; }
+  .pi-note-card .pi-note-textarea { font-size: 16px; line-height: 1.45; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pi-panel *, .pi-note-card *, #pi-markers * { transition: none; }
+}

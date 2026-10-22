@@ -1,5 +1,13 @@
 # Migration verification
 
+## Native test portability and public installation — October 22, 2026
+
+The first hosted macOS CI run passed 185 tests and failed two native tests, with the existing foreground skip. Both exact failures reproduced locally at 1024px: overlapping cards covered the first note's delete control, and a drag assertion incorrectly required movement past the viewport's clamp. The mixed-image test now minimizes the second card before accessing the first footer. The drag test verifies actual movement, viewport containment and pointer release, retaining its original beyond-card movement assertion when actual space permits. Both tests cover requested 1024px and 1440px widths; macOS can constrain a requested size to its display work area. No runtime, guard, capture or catalog code changed.
+
+The final `npm run typecheck`, `npm test` and `npm run check:package` passed: **189 passed, one existing foreground walkthrough skipped**. `npm test` also rebuilt the sample. A parameterization run first exposed a missing serialized Electron evaluation argument; the explicit argument was corrected before this final full run. The final log is `outputs/release-ci-final-tests.log`. Independent review found no remaining issues in the test correction. Hosted CI receipts are available in [GitHub Actions](https://github.com/leoscricca/pi-annotate-electron/actions).
+
+The public `v0.1.0` tag installed through the project-local Pi CLI in an isolated temporary home. Its extension loaded through the real Pi SDK, registered its command/tools, and launched and normally closed the actual hidden sample. Public logo, dark/light screenshots, GIF and video returned HTTP 200 and matched local bytes. The repository is public under MIT and the GitHub release includes the archive and video. npm publication remains pending publisher account setup. No owner Pi settings or application profiles were changed. The test correction follows the tag; packaged runtime bytes remain unchanged.
+
 ## Public release preparation — October 22, 2026
 
 The owner approved MIT licensing and public GitHub distribution. Release preparation adds visual documentation, original logo concepts, synthetic demo media, package metadata, an executable launcher, built fixture packaging and macOS CI. Electron is pinned to 44.9.3, with the owned-route prerequisite updated to match. Runtime dependency lookup now uses Node resolution so npm-hoisted dependencies work; the pinned picker hash, frozen catalogs and four paint exceptions remain unchanged.

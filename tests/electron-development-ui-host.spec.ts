@@ -743,8 +743,9 @@ test('attached Crop saves only canonical crops and camera-off annotation adds no
   }
 })
 
-test('attached mixed screenshot choices capture only notes that request crops', async () => {
+for (const width of [1024, 1440]) test(`attached mixed screenshot choices capture only notes that request crops at requested ${width}px`, async () => {
   const f = await launch(path.join(output, 'main/index.js'))
+  await f.application.evaluate(({ BrowserWindow }, requestedWidth) => BrowserWindow.getAllWindows()[0]!.setContentSize(requestedWidth, 740), width)
   await f.application.evaluate(({ BrowserWindow }) => {
     const contents = BrowserWindow.getAllWindows()[0]!.webContents
     const original = contents.capturePage
@@ -767,6 +768,8 @@ test('attached mixed screenshot choices capture only notes that request crops', 
     await expect(notes.nth(1).locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'false')
     await notes.nth(0).locator('.pi-note-textarea').fill('Capture the Settings control.')
     await notes.nth(1).locator('.pi-note-textarea').fill('Do not capture the Files control.')
+    // Keep the first footer reachable when the two cards overlap at 1024px.
+    await notes.nth(1).getByRole('button', { name: 'Minimize annotation', exact: true }).click()
     await notes.nth(0).getByRole('button', { name: 'Delete annotation', exact: true }).click()
     await f.page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
     await expect(notes.nth(0).getByRole('button', { name: 'Remove screenshot', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -1136,8 +1139,9 @@ test('floating dock drag captures native pointer input and releases it for selec
   } finally { await f.page.mouse.up(); await ui.close() }
 })
 
-test('owned picker note drag crosses its card boundary without product input or a stuck drag state', async () => {
+for (const width of [1024, 1440]) test(`owned picker note drag crosses its card boundary without product input or a stuck drag state at requested ${width}px`, async () => {
   const f = await launch(path.join(output, 'main/index.js'))
+  await f.application.evaluate(({ BrowserWindow }, requestedWidth) => BrowserWindow.getAllWindows()[0]!.setContentSize(requestedWidth, 740), width)
   const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
   const ui = await connectDevelopmentTarget(target, { directory: f.registry, session: 'picker-drag-pane' })
   try {
@@ -1150,7 +1154,13 @@ test('owned picker note drag crosses its card boundary without product input or 
     await expect(card).toHaveClass(/dragging/)
     await f.page.mouse.move(box.x + before.width + 60, box.y - 180, { steps: 6 })
     await f.page.mouse.up()
-    expect((await card.boundingBox())!.x).toBeGreaterThan(before.x + before.width)
+    const after = (await card.boundingBox())!, viewport = await f.page.evaluate(() => ({ width: innerWidth }))
+    expect(after.x).toBeGreaterThan(before.x + 32)
+    // macOS may clamp a requested native width to the CI display work area.
+    if (viewport.width > before.x + before.width * 2 + 60) expect(after.x).toBeGreaterThan(before.x + before.width)
+    expect(after.x + after.width).toBeLessThanOrEqual(viewport.width)
+    await f.page.mouse.move(20, 20)
+    expect((await card.boundingBox())!.x).toBe(after.x)
     await expect(card).not.toHaveClass(/dragging/)
     await expect(f.page.getByRole('dialog')).toHaveCount(0)
   } finally { await f.page.mouse.up(); await ui.close() }

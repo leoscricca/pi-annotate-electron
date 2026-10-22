@@ -10,3 +10,6 @@ coverage/
 .pi/
 outputs/
 *.tgz
+
+# Local npm publishing handbook
+/NPM_PUBLISH.md

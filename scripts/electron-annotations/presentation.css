@@ -1,4 +1,4 @@
-/* Canonical OpenChamber values, applied only to picker-owned overlays. */
+/* Shared geometry with scoped Catppuccin colors; copied resources stay intact. */
 :is(#pi-panel,.pi-note-card,#pi-highlight,#pi-tooltip,#pi-markers,.pi-connectors) {
   --pi-bg-body: var(--surface-background);
   --pi-bg-card: var(--surface-elevated);
@@ -47,23 +47,29 @@
   font: var(--text-ui-label)/1.45 var(--font-sans); cursor: default; opacity: 1;
 }
 #pi-panel button { width: 28px; min-height: 28px; padding: 0; margin: 0; gap: 0; flex: none; border-radius: var(--radius-full); }
-#pi-panel button:hover,.pi-note-card button:hover { color: var(--surface-foreground); background: var(--interactive-hover); }
+#pi-panel button:hover,.pi-note-card button:hover { color: var(--pi-control-blue); background: var(--interactive-hover); }
 #pi-panel button:disabled,.pi-note-card button:disabled { opacity: .35; }
-#pi-panel button[aria-pressed="true"].pi-cnc-select,
-#pi-panel button[aria-pressed="false"].pi-cnc-visibility,
+#pi-panel button[aria-pressed="true"].pi-cnc-select {
+  color: var(--pi-control-peach); background: color-mix(in srgb,var(--pi-cat-peach) 12%,var(--surface-elevated));
+}
+#pi-panel button[aria-pressed="false"].pi-cnc-visibility {
+  color: var(--pi-control-blue); background: color-mix(in srgb,var(--pi-cat-blue) 12%,var(--surface-elevated));
+}
 .pi-note-card .pi-cnc-details-toggle[aria-expanded="true"] {
-  color: var(--primary-text); background: color-mix(in srgb,var(--primary-base) 12%,var(--surface-elevated));
+  color: var(--pi-control-mauve); background: color-mix(in srgb,var(--pi-cat-mauve) 12%,var(--surface-elevated));
 }
 #pi-panel button:focus-visible,.pi-note-card :is(button,textarea):focus-visible {
   outline: 2px solid var(--interactive-focus); outline-offset: 2px;
 }
 #pi-panel #pi-submit {
   height: 44px; width: 44px; min-width: 44px; padding: 10px; border-radius: var(--radius-full);
-  color: var(--primary-foreground); background: var(--primary-base); box-shadow: 0 8px 25px var(--surface-overlay);
+  color: var(--pi-action-ink); background: var(--primary-base); box-shadow: 0 8px 25px var(--surface-overlay);
 }
 #pi-panel #pi-submit:hover { background: var(--primary-hover); }
 #pi-panel #pi-submit:disabled { opacity: 1; background: var(--surface-elevated); color: var(--surface-muted-foreground); border: 1px solid var(--interactive-border); }
 #pi-panel #pi-submit:disabled svg { opacity: .5; }
+#pi-panel .pi-cnc-count svg { color: var(--pi-control-mauve); }
+#pi-panel #pi-close:hover { color: var(--status-error-text); }
 #pi-panel .pi-cnc-undo { margin-left: 4px; }
 #pi-panel .pi-cnc-count { display: inline-flex; align-items: center; gap: 5px; padding: 0 4px; color: var(--surface-muted-foreground); }
 #pi-panel #pi-count { min-width: 0; font: var(--text-micro)/1.45 var(--font-sans); font-variant-numeric: tabular-nums; }
@@ -82,11 +88,11 @@
   font: var(--text-ui-label)/1.45 var(--font-sans);
 }
 .pi-note-card:hover { border-color: var(--pi-note-accent,var(--interactive-border-hover)); }
-.pi-note-card :is(button,textarea):focus-visible { outline-color: var(--pi-note-accent,var(--interactive-focus)); }
+.pi-note-card :is(button,textarea):focus-visible { outline-color: var(--pi-note-focus,var(--pi-note-accent,var(--interactive-focus))); }
 .pi-note-card .pi-note-header { flex-shrink: 0; padding: 12px 14px; gap: 9px; background: transparent; border: 0; }
 .pi-note-card .pi-note-badge {
   flex-shrink: 0; width: 22px; height: 22px; border-radius: var(--radius-full);
-  background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 12%,var(--surface-elevated)); color: var(--pi-note-accent,var(--primary-text));
+  background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 12%,var(--surface-elevated)); color: var(--pi-badge-text,var(--pi-note-accent,var(--primary-text)));
   font: var(--text-micro)/1.45 var(--font-sans);
 }
 .pi-note-card .pi-note-selector { color: var(--surface-foreground); font: var(--text-ui-label)/1.45 var(--font-sans); }
@@ -100,7 +106,7 @@
 .pi-note-card .pi-note-textarea::placeholder { color: var(--surface-muted-foreground); font-style: italic; opacity: 1; }
 .pi-note-card .pi-cnc-footer { display: flex; flex-shrink: 0; align-items: center; gap: 8px; padding: 12px 16px; }
 .pi-note-card .pi-note-screenshot { opacity: 1; width: auto; gap: 6px; font-size: var(--text-micro); white-space: nowrap; }
-.pi-note-card .pi-note-screenshot.active { color: var(--primary-text); background: transparent; }
+.pi-note-card .pi-note-screenshot.active { color: var(--pi-control-blue); background: transparent; }
 .pi-note-card .pi-cnc-destination { margin-left: auto; color: var(--surface-muted-foreground); font-size: var(--text-micro); white-space: nowrap; }
 .pi-note-card .pi-cnc-details-toggle { margin-left: auto; flex-shrink: 0; transform: none; }
 .pi-note-card .pi-note-close { flex-shrink: 0; }
@@ -121,7 +127,7 @@
 .pi-notes-container.pi-cnc-hidden,#pi-markers.pi-cnc-hidden,#pi-highlight.pi-cnc-hidden,#pi-tooltip.pi-cnc-hidden { visibility: hidden !important; }
 #pi-markers .pi-marker-badge { width: 22px; height: 22px; font: var(--text-micro)/1.45 var(--font-sans); }
 #pi-markers .pi-marker-outline { border-color: var(--pi-note-accent,var(--primary-text)); background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 7%,transparent); }
-#pi-markers .pi-marker-badge { background: var(--surface-elevated); color: var(--pi-note-accent,var(--primary-text)); border: 1px solid var(--pi-note-accent,var(--primary-text)); }
+#pi-markers .pi-marker-badge { background: var(--surface-elevated); color: var(--pi-badge-text,var(--pi-note-accent,var(--primary-text))); border: 1px solid var(--pi-note-accent,var(--primary-text)); }
 #pi-highlight { transition: none; }
 body:has(.pi-note-card:focus-within) #pi-tooltip { visibility: hidden; }
 svg.pi-connectors { display: none; }

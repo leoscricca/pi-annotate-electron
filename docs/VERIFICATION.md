@@ -1,4 +1,27 @@
-# Migration verification
+# Verification record
+
+## Catppuccin overlay and v0.1.1 — October 22, 2026
+
+The shared overlay now uses Catppuccin Mocha dark and Latte light. Peach, Blue and Mauve carry the approved Orbit identity into its controls. Annotation colors draw from a shuffled fourteen-accent cycle, avoid active colors on reuse, and remain attached to original cards through undo/redo and theme changes. Copied OpenChamber resources, the pinned picker, frozen catalogs, four paint exceptions and bridge/tool schemas are unchanged.
+
+Fresh checks against the changed runtime passed:
+
+| Command | Result |
+| --- | --- |
+| `npm run build` | Passed |
+| `npm run typecheck` | Passed |
+| `npm run check:package` | Passed: 30 fixed resources, frozen catalogs, SDK family and 89 relative imports in 81 source files |
+| `npm test` | **194 passed, one existing foreground walkthrough skipped** |
+| `npm audit --omit=dev --audit-level=moderate` | Zero reported vulnerabilities |
+| Focused presentation suite | All 26 passed |
+| Reduced-motion contrast recheck | Passed across all fourteen Latte accents; focus ≥3:1 and screenshot/placeholder text ≥4.5:1 |
+| Design detector | No deterministic findings; nothing suppressed |
+
+New regressions first reproduced the old palette and light-mode focus contrast failures. The final tests cover shuffled membership and first-cycle uniqueness, cycle reuse with two and ten simultaneous notes, repeated deletion/reselection and history restoration, explicit theme switching, contrast and unchanged product colors. Independent source review found light-mode contrast issues; the corrected focus and control inks passed its recheck. The full suite retains zero-capture None, verified crops and capture refusals, input guards, restoration, stale references, explicit reconnect, delayed cleanup and actual-launcher terminal signals. Logs remain under ignored `outputs/catppuccin-*.log`.
+
+`npm run demo` captured the actual extension in a hidden fictional Electron sample, including two literal no-image notes delivered to the offline fixture. Mocha/Latte desktop and a 390px narrow-window capture were visually inspected together. The GIF, MP4 and screenshots are refreshed; `compact.png` records the narrow layout. This is a window-width check, not mobile platform acceptance. A safe local gallery exposes only copied public media.
+
+Version, lockfile, install examples and package media URLs consistently target v0.1.1. Public tag installation and release receipts must be verified separately from these local results. npm publication remains pending the owner's publisher account. No owner application restart, global installation, provider call or private profile was used. Checks establish hidden macOS development behavior, not foreground focus, Windows, packaged apps or live-provider acceptance. Every section below describes its earlier source version.
 
 ## Native test portability and public installation — October 22, 2026
 

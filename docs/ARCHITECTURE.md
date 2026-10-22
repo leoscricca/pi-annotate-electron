@@ -48,7 +48,7 @@ The tools expose fixed operations, not arbitrary evaluation or protocol dispatch
 
 ## Human selection and agent input
 
-The hash-verified Pi Annotate dependency supplies selection behavior. Shared owned presentation adds the dock, editor, request-local history, per-note image controls, themes and stable color identity. Fixed local hooks validate original nodes before history restoration; the upstream asset remains unchanged.
+The hash-verified Pi Annotate dependency supplies selection behavior. Shared owned presentation adds the dock, editor, request-local history, per-note image controls, Catppuccin Mocha/Latte themes and stable color identity. Request-local shuffled accent cycles avoid repeating active colors; original cards retain their assigned color families through history. Fixed local hooks validate original nodes before history restoration; the upstream asset remains unchanged.
 
 Owned manual popovers keep controls above ordinary app stacking layers while retaining their original ancestry. A native HTML app modal prevents activation or cancels an active picker. Controls are never moved into product dialogs.
 

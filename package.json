@@ -1,6 +1,6 @@
 {
   "name": "pi-annotate-electron",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Point at your Electron UI, annotate it, and send precise feedback to your Pi coding session.",
   "type": "module",
   "license": "MIT",
@@ -31,8 +31,8 @@
     "extensions": [
       "./extensions/annotate-electron.ts"
     ],
-    "image": "https://raw.githubusercontent.com/leoscricca/pi-annotate-electron/v0.1.0/docs/media/preview.png",
-    "video": "https://raw.githubusercontent.com/leoscricca/pi-annotate-electron/v0.1.0/docs/media/demo.mp4"
+    "image": "https://raw.githubusercontent.com/leoscricca/pi-annotate-electron/v0.1.1/docs/media/preview.png",
+    "video": "https://raw.githubusercontent.com/leoscricca/pi-annotate-electron/v0.1.1/docs/media/demo.mp4"
   },
   "files": [
     "extensions",

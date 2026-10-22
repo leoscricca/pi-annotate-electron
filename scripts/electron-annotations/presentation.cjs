@@ -15,7 +15,8 @@ function scopedTokens(source) {
 
 async function presentationSource(repositoryRoot) {
   const tokenSource = await fs.readFile(path.join(repositoryRoot, 'design/openchamber/tokens.css'), 'utf8')
-  const css = scopedTokens(tokenSource) + await fs.readFile(path.join(repositoryRoot, 'scripts/electron-annotations/presentation.css'), 'utf8')
+  const themeSource = await fs.readFile(path.join(repositoryRoot, 'scripts/electron-annotations/catppuccin.css'), 'utf8')
+  const css = scopedTokens(tokenSource) + scopedTokens(themeSource) + await fs.readFile(path.join(repositoryRoot, 'scripts/electron-annotations/presentation.css'), 'utf8')
   const names = ['focus-3-line', 'eye-line', 'eye-off-line', 'arrow-go-back-line', 'arrow-go-forward-line', 'chat-3-line', 'arrow-up-line', 'subtract-line', 'add-line', 'delete-bin-6-line', 'image-line', 'code-s-slash-line', 'close', 'arrow-down-s']
   const assets = path.join(repositoryRoot, 'design/icons')
   const values = await Promise.all(names.map(name => fs.readFile(path.join(assets, `${name}.svg`), 'utf8')))

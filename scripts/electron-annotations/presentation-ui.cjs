@@ -8,13 +8,17 @@ function installPresentation(css, icons) {
   let modalInterrupted = false
   let dockDrag = null, dockMoved = false
   const selectionColors = new WeakMap()
-  const palette = ['var(--status-info-text)', 'var(--status-success-text)', 'var(--status-warning-text)', 'var(--primary-text)',
-    'color-mix(in srgb,var(--status-info-text) 65%,var(--primary-text))',
-    'color-mix(in srgb,var(--status-success-text) 65%,var(--status-info-text))',
-    'color-mix(in srgb,var(--status-warning-text) 65%,var(--primary-text))',
-    'color-mix(in srgb,var(--primary-text) 65%,var(--status-info-text))',
-    'color-mix(in srgb,var(--status-success-text) 65%,var(--status-warning-text))',
-    'color-mix(in srgb,var(--status-info-text) 65%,var(--status-warning-text))']
+  const palette = ['rosewater','flamingo','pink','mauve','red','maroon','peach','yellow','green','teal','sky','sapphire','blue','lavender']
+    .map(name => `var(--pi-cat-${name})`)
+  let colorCycle = []
+  function shuffleColors() {
+    const values = palette.map((_, index) => index)
+    for (let i = values.length - 1; i > 0; i--) {
+      const next = Math.floor(Math.random() * (i + 1))
+      ;[values[i], values[next]] = [values[next], values[i]]
+    }
+    return values
+  }
   const icon = (node, name, label) => {
     node.innerHTML = icons[name]
     node.setAttribute('aria-label', label)
@@ -78,12 +82,23 @@ function installPresentation(css, icons) {
     event.preventDefault(); event.stopImmediatePropagation()
   }
   function colorSelections(snapshot) {
-    const used = new Set()
+    // Reserve known colors before assigning new ones, including restored cards.
+    const reserved = new Map()
+    for (const entry of snapshot.entries) {
+      const annotation = entry.card || entry.element, slot = selectionColors.get(annotation)
+      if (slot !== undefined && !reserved.has(slot)) reserved.set(slot, annotation)
+    }
+    const used = new Set(reserved.keys())
     const rules = snapshot.entries.map((entry, index) => {
       const annotation = entry.card || entry.element
       let slot = selectionColors.get(annotation)
-      if (slot === undefined || used.has(slot)) slot = palette.findIndex((_, value) => !used.has(value))
-      selectionColors.set(annotation, slot); used.add(slot)
+      if (slot === undefined || reserved.get(slot) !== annotation) {
+        let next = colorCycle.findIndex(value => !used.has(value))
+        if (next < 0) { colorCycle = shuffleColors(); next = colorCycle.findIndex(value => !used.has(value)) }
+        slot = colorCycle.splice(next, 1)[0]
+        selectionColors.set(annotation, slot)
+      }
+      used.add(slot)
       return `.pi-note-card[data-index="${index}"],#pi-markers .pi-marker-badge[data-index="${index}"],#pi-markers .pi-marker-outline:nth-child(${index * 2 + 1}){--pi-note-accent:${palette[slot]}}`
     }).join('\n')
     // Marker nodes are rebuilt by the picker. Keep updates on a stable owned
@@ -303,7 +318,7 @@ function installPresentation(css, icons) {
       state = window.__CNC_ANNOTATION_PICKER_STATE__
       panel = document.getElementById('pi-panel'); notes = document.querySelector('.pi-notes-container'); markers = document.getElementById('pi-markers')
       selecting = true; visible = true; history = [state.snapshot()]; historyIndex = 0
-      dockMoved = false; dockDrag = null
+      dockMoved = false; dockDrag = null; colorCycle = shuffleColors()
       modalInterrupted = false
       state.setSelecting(true)
       const style = document.createElement('style'); style.textContent = css; panel.append(style)

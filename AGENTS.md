@@ -15,7 +15,7 @@ This project owns a Pi extension, an opt-in Electron startup bridge, and synthet
 
 ## Design
 
-Read `design/DESIGN.md` before overlay changes. Use the copied canonical OpenChamber tokens and licensed icons. Scope all styles to owned overlay elements. Preserve target styles, draft, focus, selection, cursor, and scroll where the original nodes remain.
+Read `design/DESIGN.md` before overlay changes. Keep copied OpenChamber resources unchanged, apply the owned Catppuccin color layer, and use the licensed icons. Scope all styles to owned overlay elements. Preserve target styles, draft, focus, selection, cursor, and scroll where the original nodes remain.
 
 ## Verification
 

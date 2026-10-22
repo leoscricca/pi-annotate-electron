@@ -6,7 +6,7 @@ The owner approved MIT licensing and a public GitHub repository for the initial 
 
 Pi accepts Git and npm package sources. Its catalog discovers public npm packages carrying the `pi-package` keyword. A public GitHub release is installable but does not itself create an npm catalog listing. See the [official package documentation](https://pi.dev/docs/latest/packages).
 
-The README uses tagged Git installation until the first npm publication. After npm confirms `pi-annotate-electron@0.1.0` is public, replace the pending notice with:
+The README uses tagged Git installation until the first npm publication. After npm confirms `pi-annotate-electron@0.1.1` is public, replace the pending notice with:
 
 ```sh
 pi install npm:pi-annotate-electron
@@ -15,7 +15,7 @@ pi install npm:pi-annotate-electron
 The launcher can then run without a source checkout:
 
 ```sh
-npx --yes pi-annotate-electron@0.1.0 \
+npx --yes pi-annotate-electron@0.1.1 \
   --app /absolute/path/to/your-app \
   --entry out/main/index.js \
   --renderer out/renderer/index.html
@@ -57,7 +57,7 @@ Host SDKs remain peers. Pinned development SDK copies validate isolated tests, n
 
 ## Media and identity
 
-`npm run demo` captures the actual hidden fictional sample. It needs the project's headless Chromium and an installed `ffmpeg`. It produces `preview.png`, `light.png`, `demo.gif`, `demo.mp4` and the logo comparison. No owner profile or live provider is used.
+`npm run demo` captures the actual hidden fictional sample. It needs the project's headless Chromium and an installed `ffmpeg`. It produces `preview.png`, `light.png`, the narrow-window `compact.png`, `demo.gif`, `demo.mp4` and the logo comparison. No owner profile or live provider is used.
 
 The current Orbit Mark uses Catppuccin Mocha colors: Peach loops (`#FAB387`), a Blue note (`#89B4FA`), a Mauve dot (`#CBA6F7`) and a Base tile (`#1E1E2E`). Its SVG and PNG live at `docs/media/logo.svg` and `docs/media/logo.png`. The earlier Focus Note, Pointer Note and initial Orbit concepts remain original MIT SVGs. Functional third-party icons retain their existing notices and are not repurposed as branding. Preserve canonical resource provenance.
 
@@ -68,13 +68,13 @@ Update version, lockfile, install examples and `pi.image` / `pi.video` tag URLs 
 With approved scope and a freshly verified release diff:
 
 1. Commit and push release files, preserving unrelated worktree changes.
-2. Create and push the matching `v0.1.0` tag. Public visibility requires owner approval, already granted for this initial release.
+2. Create and push the matching `v0.1.1` tag. Public visibility requires owner approval, already granted for this initial release.
 3. Publish the GitHub release with validation notes, archive and video.
 4. With npm authentication available, publish:
 
    ```sh
    npm publish --access public
-   npm view pi-annotate-electron@0.1.0 version license keywords pi --json
+   npm view pi-annotate-electron@0.1.1 version license keywords pi --json
    ```
 
 5. Test a private temporary Pi installation from the public tag and, after publication, from npm. Check public media URLs and the catalog after indexing.

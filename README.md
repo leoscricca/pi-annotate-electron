@@ -15,11 +15,11 @@ The demo uses the included fictional sample in a hidden macOS Electron window. I
 ## What you get
 
 - **One selection button.** Point at an element and leave a note without activating its app action.
-- **Distinct annotation colors.** Matching outlines, markers and note cards make selections easy to follow. Colors stay stable through undo and redo within a request.
+- **Distinct annotation colors.** Matching outlines, markers and note cards draw from a shuffled cycle of fourteen Catppuccin accents. Active notes have distinct colors; their assigned color families stay stable through undo and redo within a request.
 - **A movable icon dock.** Drag its edges or gaps; hide annotations, undo, redo, or send with one click.
 - **A focused editor.** Write a comment, minimize it, delete it, or open element details. The details toggle stays in place.
 - **Optional screenshots.** No image by default. Each note has its own Add screenshot / Element crop control.
-- **Light and dark themes.** Scoped OpenChamber tokens follow the app's explicit `data-theme` or the system color preference.
+- **Light and dark themes.** Catppuccin Mocha dark and Latte light follow the app's explicit `data-theme` or the system color preference. Peach, Blue and Mauve carry the logo's accents into the controls.
 - **Bounded frontend tools.** Pi can inspect snapshots, request screenshots, interact with current element references, and read frontend diagnostics.
 
 | Dark | Light |
@@ -39,7 +39,7 @@ The app keeps its own authentication, product features, and agent sessions. Pi r
 Install the tagged GitHub package in Pi:
 
 ```sh
-pi install git:github.com/leoscricca/pi-annotate-electron@v0.1.0
+pi install git:github.com/leoscricca/pi-annotate-electron@v0.1.1
 ```
 
 Start a fresh Pi session after installation. The npm package and Pi catalog listing are pending the first npm publication; Git installation is available independently. See the [release guide](docs/RELEASING.md).
@@ -49,7 +49,7 @@ For a source checkout, including the external app launcher:
 ```sh
 git clone https://github.com/leoscricca/pi-annotate-electron.git
 cd pi-annotate-electron
-git checkout v0.1.0
+git checkout v0.1.1
 npm ci
 ```
 

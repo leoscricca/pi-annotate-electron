@@ -28,11 +28,11 @@ The [complete license](design/openchamber/LICENSE.remix-icon.txt) accompanies th
 
 The twelve additional `*-line.svg` functional controls come from Remix Icon v4.6.0 under Apache License 2.0. The [release license](design/licenses/remix-icon-4.6.0-Apache-2.0.txt) and [source record](design/openchamber/SOURCES.md) accompany these unchanged copies.
 
-## Catppuccin Mocha palette
+## Catppuccin palettes
 
 Copyright (c) 2021 Catppuccin. MIT License.
 
-The original Orbit Mark uses selected colors from the [Catppuccin Mocha palette](https://catppuccin.com/palette/): Peach, Blue, Mauve, Base and Crust. The logo geometry is original project artwork. The [palette license](design/licenses/catppuccin-MIT.txt) accompanies the package; [upstream source](https://github.com/catppuccin/palette).
+The original Orbit Mark uses selected colors from the [Catppuccin Mocha palette](https://catppuccin.com/palette/): Peach, Blue, Mauve, Base and Crust. The owned annotation interface uses Mocha dark and Latte light colors, including a shuffled cycle of their fourteen accents. The logo geometry is original project artwork. The [palette license](design/licenses/catppuccin-MIT.txt) accompanies the package; [upstream source](https://github.com/catppuccin/palette).
 
 ## Runtime and development dependencies
 

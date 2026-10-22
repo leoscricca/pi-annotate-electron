@@ -6,12 +6,13 @@ import { resolve } from 'node:path'
 const require = createRequire(import.meta.url)
 const { createPicker } = require('../scripts/electron-development-ui/picker.cjs')
 
-async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appCss?: string } = {}) {
+async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appCss?: string; random?: number } = {}) {
   await page.setContent(`<style>${await readFile('design/openchamber/tokens.css', 'utf8')}${options.appCss ?? ''}</style>
     <main style="padding:80px;color:var(--surface-foreground);background:var(--surface-background)">
       <button id="target">Connect Codex</button><button id="second" style="margin-left:400px">Settings</button>
       <textarea id="draft">Existing product draft</textarea>
     </main>`)
+  if (options.random !== undefined) await page.evaluate(value => { Math.random = () => value }, options.random)
   await page.evaluate(() => {
     document.body.style.cursor = 'help'
     document.getElementById('draft')!.focus()
@@ -41,6 +42,132 @@ async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appC
   await picker.start('presentation-request', mode)
   return { picker, events, before }
 }
+
+
+test('Catppuccin Mocha controls use brand accents without recoloring the app', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  const { picker } = await start(page)
+  const style = (selector: string, property: string) => page.locator(selector).evaluate((node, key) => getComputedStyle(node).getPropertyValue(key), property)
+  try {
+    await expect.poll(() => style('.pi-cnc-tools', 'background-color')).toBe('rgb(30, 30, 46)')
+    await expect.poll(() => style('#target', '--surface-background')).toBe('#120f0e')
+    await expect.poll(() => style('.pi-cnc-select', 'color')).toBe('rgb(250, 179, 135)')
+    await page.locator('#target').click()
+    await expect.poll(() => style('#pi-submit', 'background-color')).toBe('rgb(250, 179, 135)')
+    await page.locator('.pi-note-screenshot').click()
+    await expect.poll(() => style('.pi-note-screenshot', 'color')).toBe('rgb(137, 180, 250)')
+    await page.getByRole('button', { name: 'Show element details', exact: true }).click()
+    await expect.poll(() => style('.pi-cnc-details-toggle', 'color')).toBe('rgb(203, 166, 247)')
+    await expect.poll(() => style('#target', '--surface-background')).toBe('#120f0e')
+  } finally { await picker.close() }
+})
+
+test('Latte follows an explicit light host and keeps note labels readable', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  const { picker } = await start(page, 'none', { random: 0.999 })
+  try {
+    await page.evaluate(() => document.documentElement.dataset.theme = 'light')
+    expect(await page.locator('.pi-cnc-tools').evaluate(node => getComputedStyle(node).backgroundColor)).toBe('rgb(239, 241, 245)')
+    await page.locator('#target').click()
+    expect(await page.locator('.pi-note-card').evaluate(node => getComputedStyle(node).borderColor)).toBe('rgb(220, 138, 120)')
+    expect(await page.locator('.pi-note-badge').evaluate(node => getComputedStyle(node).color)).toBe('rgb(76, 79, 105)')
+    await page.evaluate(() => document.documentElement.dataset.theme = 'dark')
+    expect(await page.locator('.pi-note-card').evaluate(node => getComputedStyle(node).borderColor)).toBe('rgb(245, 224, 220)')
+    expect(await page.locator('.pi-cnc-tools').evaluate(node => getComputedStyle(node).backgroundColor)).toBe('rgb(30, 30, 46)')
+  } finally { await picker.close() }
+})
+
+test('Latte note focus and screenshot captions stay readable across every accent', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const { picker } = await start(page, 'none', { random: 0.999 })
+  const ratios = { focus: [] as number[], caption: [] as number[], placeholder: [] as number[] }
+  const luminance = (rgb: number[]) => rgb.slice(0,3).map(value => { const channel = value / 255; return channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4 }).reduce((sum, value, index) => sum + value * [0.2126,0.7152,0.0722][index]!, 0)
+  const contrast = (a: number[], b: number[]) => { const light = luminance(a), dark = luminance(b); return (Math.max(light,dark) + .05) / (Math.min(light,dark) + .05) }
+  try {
+    await page.evaluate(() => document.documentElement.dataset.theme = 'light')
+    for (let i = 0; i < 14; i++) {
+      await page.locator('#target').click()
+      await page.locator('.pi-note-screenshot').click()
+      await page.keyboard.press('Tab')
+      const text = page.getByRole('textbox', { name: 'Feedback', exact: true })
+      await text.focus()
+      expect(await text.evaluate(node => node.matches(':focus-visible'))).toBe(true)
+      const colors = await page.locator('.pi-note-card').evaluate(card => {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1
+        const ctx = canvas.getContext('2d')!
+        const pixel = (color: string) => { ctx.clearRect(0,0,1,1); ctx.fillStyle = color; ctx.fillRect(0,0,1,1); return [...ctx.getImageData(0,0,1,1).data] }
+        const text = card.querySelector('textarea')!, caption = card.querySelector('.pi-note-screenshot')!
+        return { background: pixel(getComputedStyle(card).backgroundColor), focus: pixel(getComputedStyle(text).outlineColor), caption: pixel(getComputedStyle(caption).color), placeholder: pixel(getComputedStyle(text,'::placeholder').color) }
+      })
+      for (const role of ['focus','caption','placeholder'] as const) ratios[role].push(contrast(colors[role],colors.background))
+      await page.locator('#target').click()
+    }
+    expect.soft(Math.min(...ratios.focus)).toBeGreaterThanOrEqual(3)
+    expect.soft(Math.min(...ratios.caption)).toBeGreaterThanOrEqual(4.5)
+    expect.soft(Math.min(...ratios.placeholder)).toBeGreaterThanOrEqual(4.5)
+  } finally { await picker.close() }
+})
+
+test('annotation accents use shuffled Catppuccin cycles and stay unique through reuse and history', async ({ browser }) => {
+  const palette = ['#f5e0dc','#f2cdcd','#f5c2e7','#cba6f7','#f38ba8','#eba0ac','#fab387','#f9e2af','#a6e3a1','#94e2d5','#89dceb','#74c7ec','#89b4fa','#b4befe']
+    .map(hex => `rgb(${[1,3,5].map(offset => parseInt(hex.slice(offset, offset + 2),16)).join(', ')})`)
+  const sequences: string[][] = []
+  for (const random of [0, 0.999]) {
+    const page = await browser.newPage()
+    await page.emulateMedia({ colorScheme: 'dark' })
+    const { picker } = await start(page, 'none', { random })
+    try {
+      await page.evaluate(() => {
+        for (let i = 0; i < 2; i++) {
+          const node = document.createElement('button'); node.id = `color-${i}`; node.textContent = `Color target ${i}`
+          node.style.cssText = `position:fixed;left:12px;top:${160 + i * 40}px`; document.body.append(node)
+        }
+      })
+      await page.getByRole('button', { name: 'Hide annotations', exact: true }).click()
+      const colors = () => page.locator('.pi-note-card').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).borderColor))
+      for (const id of ['color-0','color-1']) await page.locator('#' + id).click()
+      const initial = await colors(), cycle = [...initial]
+      for (const value of initial) expect(palette).toContain(value)
+      for (let i = 0; i < 17; i++) {
+        await page.locator('#color-1').click(); await page.locator('#color-1').click()
+        const current = await colors()
+        expect(new Set(current).size).toBe(2)
+        expect(current[0]).toBe(initial[0])
+        expect(palette).toContain(current[1])
+        cycle.push(current[1])
+      }
+      expect(new Set(cycle.slice(0, 14)).size).toBe(14)
+      for (let i = 0; i < 34; i++) await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+      expect(await colors()).toEqual(initial)
+      sequences.push(cycle.slice(0, 14))
+    } finally { await picker.close(); await page.close() }
+  }
+  expect(sequences[0]).not.toEqual(sequences[1])
+})
+
+test('ten simultaneous notes retain distinct colors after the cycle is reused', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  const { picker } = await start(page, 'none', { random: 0.35 })
+  try {
+    await page.evaluate(() => {
+      for (let i = 0; i < 10; i++) {
+        const node = document.createElement('button'); node.id = `many-${i}`; node.textContent = `Target ${i}`
+        node.style.cssText = `position:fixed;left:12px;top:${150 + i * 32}px`; document.body.append(node)
+      }
+    })
+    await page.getByRole('button', { name: 'Hide annotations', exact: true }).click()
+    for (let i = 0; i < 10; i++) await page.locator(`#many-${i}`).click()
+    const colors = () => page.locator('.pi-note-card').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).borderColor))
+    const original = await colors()
+    expect(new Set(original).size).toBe(10)
+    for (let i = 0; i < 17; i++) {
+      await page.locator('#many-9').click(); await page.locator('#many-9').click()
+      const current = await colors()
+      expect(new Set(current).size).toBe(10)
+      expect(current.slice(0, 9)).toEqual(original.slice(0, 9))
+    }
+  } finally { await picker.close() }
+})
 
 test('icon buttons stay centered when the app adds margins to button icons', async ({ page }) => {
   const { picker } = await start(page, 'none', { appCss: 'button svg { margin-right:6px }' })
@@ -113,6 +240,7 @@ test('dock drags from its corners, stays in the viewport, and leaves controls us
 })
 
 test('selection colors match notes and markers and survive deletion and undo', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
   const { picker } = await start(page)
   try {
     for (const id of ['target', 'second']) { await page.locator('#' + id).hover(); await page.locator('#' + id).click() }
@@ -166,10 +294,12 @@ for (const theme of ['dark', 'light'] as const) {
         const color = await note.evaluate(node => {
           const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1
           const context = canvas.getContext('2d')!
-          context.fillStyle = getComputedStyle(node).backgroundColor; context.fillRect(0, 0, 1, 1)
-          return [...context.getImageData(0, 0, 1, 1).data]
+          const pixel = (value: string) => { context.clearRect(0, 0, 1, 1); context.fillStyle = value; context.fillRect(0, 0, 1, 1); return [...context.getImageData(0, 0, 1, 1).data] }
+          return { tint: pixel(getComputedStyle(node).backgroundColor), accent: pixel(getComputedStyle(node).borderColor) }
         })
-        expect(color).toEqual(theme === 'dark' ? [30, 33, 36, 255] : [231, 234, 236, 255])
+        const base = theme === 'dark' ? [30, 30, 46] : [239, 241, 245]
+        expect(color.tint[3]).toBe(255)
+        for (let channel = 0; channel < 3; channel++) expect(Math.abs(color.tint[channel]! - (base[channel]! * .94 + color.accent[channel]! * .06))).toBeLessThanOrEqual(1)
         const label = note.locator('.pi-note-header')
         const box = await label.boundingBox()
         await page.mouse.move(box!.x + 50, box!.y + 12)

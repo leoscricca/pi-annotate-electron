@@ -61,6 +61,12 @@ try {
   await move(0, 500, 130)
   await page.locator('.pi-note-textarea').fill('The same tools, in light mode.')
   await page.screenshot({ path: path.join(media, 'light.png') })
+  await application.evaluate(({ BrowserWindow }) => {
+    const window = BrowserWindow.getAllWindows()[0]
+    window.setMinimumSize(0, 0)
+    window.setSize(390, 844)
+  })
+  await page.screenshot({ path: path.join(media, 'compact.png') })
 } finally {
   await ui?.close()
   await application.close()

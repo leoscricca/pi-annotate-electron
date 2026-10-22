@@ -1,21 +1,139 @@
+<p align="center"><img src="docs/media/logo.svg" width="96" height="96" alt="Pi Annotate Electron logo"></p>
+
 # Pi Annotate Electron
 
-A private Pi package for annotations and bounded frontend UI tools in an explicitly bootstrapped development Electron app. The developer's Pi session owns delivery. The package creates no product agent, authentication store, or model configuration.
+**Point. Annotate. Send to Pi.**
 
-## Scope
+Give your Pi coding session precise feedback on an Electron development UI. Select elements, write notes, and send them with element context and optional crops—all from a small floating toolbar.
 
-- macOS development apps, not packaged applications.
-- A trusted main entry, a pinned local renderer file, and Electron's default session.
-- A private authenticated local socket and Electron's internal debugger API. No public CDP port or process scan.
-- Two separate routes: an owned synthetic sample and an attached development app.
+![Selecting elements and sending annotations in the fictional sample](docs/media/demo.gif)
 
-The connected app is trusted content. UI snapshots, diagnostics, and requested images can reach the source Pi session. This route does not mask private content. Use only an approved app and profile.
+[Watch the short video](docs/media/demo.mp4) · [Architecture](docs/ARCHITECTURE.md) · [Connection protocol](docs/ELECTRON_DEVELOPMENT_UI_PROTOCOL.md) · [Report an issue](https://github.com/leoscricca/pi-annotate-electron/issues)
 
-The synthetic route keeps a frozen content catalog and four exact button hover and active paint exceptions. It cannot calibrate itself from an owner app.
+The demo uses the included fictional sample in a hidden macOS Electron window. It makes no live account or model calls.
 
-## Local setup
+## What you get
 
-Use Node 24.22 or later. Native terminal regressions also require Python 3.9 or later. They use only its standard library and private pseudo-terminals.
+- **One selection button.** Point at an element and leave a note without activating its app action.
+- **Distinct annotation colors.** Matching outlines, markers and note cards make selections easy to follow. Colors stay stable through undo and redo within a request.
+- **A movable icon dock.** Drag its edges or gaps; hide annotations, undo, redo, or send with one click.
+- **A focused editor.** Write a comment, minimize it, delete it, or open element details. The details toggle stays in place.
+- **Optional screenshots.** No image by default. Each note has its own Add screenshot / Element crop control.
+- **Light and dark themes.** Scoped OpenChamber tokens follow the app's explicit `data-theme` or the system color preference.
+- **Bounded frontend tools.** Pi can inspect snapshots, request screenshots, interact with current element references, and read frontend diagnostics.
+
+| Dark | Light |
+| --- | --- |
+| ![Dark annotation interface](docs/media/preview.png) | ![Light annotation interface](docs/media/light.png) |
+
+## Requirements and support
+
+Current support is **macOS development apps** with an existing main entry, a fixed local HTML renderer, Electron's default session, and the compatible external bootstrap. Use Node **24.22 or later** and an installed [Pi coding agent](https://pi.dev/).
+
+The launcher runs your development entry with the package's pinned Electron runtime. Build your target app first. Native modules must support that runtime. This release does not establish support for packaged apps, Windows, arbitrary running Electron processes, remote renderer URLs, or every Electron framework.
+
+The app keeps its own authentication, product features, and agent sessions. Pi remains responsible for your coding session and model provider.
+
+## Install
+
+Install the tagged GitHub package in Pi:
+
+```sh
+pi install git:github.com/leoscricca/pi-annotate-electron@v0.1.0
+```
+
+Start a fresh Pi session after installation. The npm package and Pi catalog listing are pending the first npm publication; Git installation is available independently. See the [release guide](docs/RELEASING.md).
+
+For a source checkout, including the external app launcher:
+
+```sh
+git clone https://github.com/leoscricca/pi-annotate-electron.git
+cd pi-annotate-electron
+git checkout v0.1.0
+npm ci
+```
+
+If Electron's dependency install script was blocked by your npm policy, run `node node_modules/electron/install.js` in this checkout to download the pinned runtime.
+
+To load only this checkout in a single Pi process, use `pi -e ./extensions/annotate-electron.ts` instead of also installing the package. Avoid loading two copies in one session.
+
+## Start a development app with explicit opt-in
+
+From the extension checkout, launch your already-built app in another terminal:
+
+```sh
+npm run start:app -- \
+  --app /absolute/path/to/your-app \
+  --entry out/main/index.js \
+  --renderer out/renderer/index.html
+```
+
+Replace these example paths with your app's actual files. Entry and renderer must exist inside the selected root, which must contain `package.json`. Application bundles and ASAR archives are refused. An optional `--profile /absolute/path/to/profile` chooses an explicit profile; the launcher does not delete it. Use an approved development profile.
+
+To try the fictional sample, run `npm run build`, then use the same command with this checkout as `--app`. Its entry and renderer match the example.
+
+The launcher installs the bridge before importing the app entry. Ordinary app startup advertises no bridge. An already-open app needs a manual restart through this launcher; connecting does not launch, restart, or reload it.
+
+## Connect and annotate
+
+In the Pi session that should receive your feedback:
+
+```text
+/annotate-electron connect
+```
+
+Choose the intended window if Pi offers multiple compatible targets. The picker opens after a verified connection. Select an element, write your feedback, and press the floating send arrow. The eye toggles visibility, the dash minimizes a note, and the bin deletes it. Numbered markers reopen notes. The code icon reveals element context; details depend on the route's privacy rules.
+
+| Command | Action |
+| --- | --- |
+| `/annotate-electron connect` | Connect, or reopen the idle picker on the current connection |
+| `/annotate-electron none` | Start a new picker with images off by default |
+| `/annotate-electron crop` | Start with per-note element crops enabled |
+| `/annotate-electron cancel` | Cancel the picker and keep the UI connection |
+| `/annotate-electron status` | Inspect connection or cleanup state |
+| `/annotate-electron disconnect` | Detach without closing the app |
+| `/annotate-electron close` | Detach an attached app; normally close an owned sample |
+| `/annotate-electron open` | Request confirmation to open a separate fictional sample |
+
+While selection is active, agent input and product operations are blocked. Native HTML app modals prevent picker activation or cancel an active picker. After navigation, reload, or transport loss, reconnect explicitly. Save app work before any manual restart.
+
+## Architecture and protocols
+
+```mermaid
+flowchart LR
+  Human[Developer] --> Picker[Floating picker]
+  Pi[Source Pi session] <-->|Authenticated local socket| Bridge[Development bridge]
+  Bridge <-->|Isolated frontend helpers| App[Selected Electron window]
+  Picker --> Bridge
+  Bridge -->|Literal notes and optional verified crops| Pi
+```
+
+Two routes have different authority. **Attached development** connects to one explicitly bootstrapped window and detaches on close. **Owned synthetic** launches this package's fictional sample, enforces its frozen content catalog, and may close its own child. Neither route creates a second application agent.
+
+| Interface | Support |
+| --- | --- |
+| Version 1 JSON messages over a private Unix-domain socket | Supported; mutually authenticated, same-user local discovery |
+| Explicit Electron bootstrap + fixed local HTML renderer | Supported on eligible macOS development apps |
+| `annotate_electron` Pi tool | Annotation lifecycle, with a closed schema |
+| `electron_ui` Pi tool | Bounded snapshots, screenshots, input, and diagnostics |
+| Public CDP, WebSocket, HTTP app endpoints, MCP attachment | Not connection interfaces in this package |
+| Arbitrary JavaScript, shell, file operations, backend access | Not exposed by the tools |
+
+The bridge uses Electron's internal debugger API and fixed isolated-world helpers. It opens no public debugger port. Every operation is bound to the source Pi session, app instance, window, connection, and document generation. Input references require a current snapshot revision and the same live node. An input timeout requires inspecting state before another input; operations are never replayed automatically.
+
+Read the [architecture guide](docs/ARCHITECTURE.md) for the source map and lifecycle, or the [wire specification](docs/ELECTRON_DEVELOPMENT_UI_PROTOCOL.md) for authentication, schemas, limits, and refusal outcomes.
+
+## Privacy and cleanup
+
+Use only an approved development app and profile. **Attached UI content is trusted and unmasked:** UI text, URLs, frontend errors, and requested images can reach Pi's configured model. Local transport does not imply local model inference. Comments and element facts remain untrusted review input and do not grant permission to edit source or operate processes.
+
+No-image and camera-off notes make zero screenshot calls. Network diagnostics retain no headers, cookies, or request or response bodies. Registry and image directories use `0700`; sockets, records, and images use `0600`. Images are checked against actual PNG bytes, dimensions, digest, ownership, and file identity before delivery.
+
+Disconnect removes owned helpers and listeners without closing, reloading, or restarting the attached app. It preserves retained images. Image removal requires a separate owner request. Unknown cleanup stays blocked with its evidence; an expired timeout or dead socket is not proof of cleanup.
+
+The fictional route has stricter reviewed-content and capture guards. It cannot learn its safe catalog from a real app. [Attached guide](docs/DEVELOPMENT_UI_CONNECTION.md) · [Synthetic guide](docs/ELECTRON_ANNOTATION_FEEDBACK.md)
+
+## Develop and verify
 
 ```sh
 npm ci
@@ -26,68 +144,12 @@ npm run check:package
 npm test
 ```
 
-The headless Chromium install stays inside this project's `node_modules`. Automated checks use isolated test profiles, not the owner's Chrome profile.
+Native terminal regressions also need Python 3.9 or later, using its standard library. Tests use headless Chromium, hidden macOS Electron windows, fictional data, private temporary profiles, and offline Pi sessions. Host SDKs remain peers; pinned local development copies support isolated tests. Those checks do not establish foreground focus, Windows, packaged-app, or live-provider acceptance.
 
-All dependencies belong to this directory. No command installs or activates this package in global Pi settings. The host Pi SDK packages are peers. Local development copies support isolated tests only.
+To regenerate screenshots and the demo with the actual hidden sample, install `ffmpeg` and the headless Chromium dependency above, then run `npm run demo`. The three original vector logo concepts are in [docs/media](docs/media); [compare them](docs/media/logo-options.png). Focus Note is the current mark.
 
-The lockfile and overrides keep the tested SDK 1.1.0 family together. They do not replace the host Pi process's SDK. Other SDK versions do not inherit the local test results.
+See [release checks](docs/RELEASING.md), [verification records](docs/VERIFICATION.md), and [design provenance](design/DESIGN.md). Historical documents describe their original source versions.
 
-## Activate in one Pi process
+## License
 
-Start a fresh Pi process from this directory:
-
-```sh
-pi -e ./extensions/annotate-electron.ts
-```
-
-Do not load the former host-local extension in the same process. Do not reset or discard a retained cleanup block to force a connection.
-
-## Start a development app with explicit opt-in
-
-First build the target app. In another terminal, start it through the external launcher:
-
-```sh
-npm run start:app -- \
-  --app /absolute/path/to/app \
-  --entry out/main/index.js \
-  --renderer out/renderer/index.html
-```
-
-The entry and renderer must exist inside the selected app root. The root must contain `package.json`. The launcher refuses application bundles and ASAR archives. An optional `--profile /absolute/profile/directory` selects an explicit profile. The launcher does not remove that profile.
-
-For the package's fictional sample, use `--app` with this directory after `npm run build`. The sample has no product backend or live account operations.
-
-The launcher installs the compatible bridge before the app entry executes. Ordinary app startup stays bridge-free. An already-open app needs an owner-controlled restart through this launcher. Connect never starts, reloads, or restarts an app automatically.
-
-Electron and its helpers use a separate process group and no terminal input. Terminal signals reach the launcher, which requests normal app quit through its private parent channel. The launcher retains that channel until Electron exits. Normal quit joins actual bridge work and cleanup. An unconfirmed cleanup stays blocked. There is no forced-termination deadline.
-
-## Connect and annotate
-
-In the source Pi process, use:
-
-```text
-/annotate-electron connect
-```
-
-Select the intended verified window with Pi's native chooser. A successful connection activates the picker. No image is the default. Picker readiness and note delivery are separate results.
-
-Use the icon toolbar to select elements and the separate arrow button to submit notes. The eye hides or shows annotations; undo/redo restores added or deleted notes. A dash minimizes a note, the bin deletes it, and a numbered marker reopens it. The footer code icon expands element details without moving the toggle. Add screenshot opts an individual note into an element crop. Comments and element facts remain untrusted review input. They grant no source-edit or process authority.
-
-```text
-/annotate-electron status
-/annotate-electron disconnect
-```
-
-Disconnect removes only owned effects. It preserves the app, user state, and retained images. The `close` command also detaches an attached app. Only the owned synthetic route grants child-close authority.
-
-The `electron_ui` tool supplies bounded snapshots, requested screenshots, input, and diagnostics for the selected frontend. It accepts no evaluation, shell command, arbitrary protocol method, or filesystem operation. An input timeout requires actual state inspection before another input.
-
-## Design and evidence
-
-The overlay owns its [canonical token scope](design/DESIGN.md). It does not borrow the target application's palette or modify target styles. Required token exports, licensed functional icons, and their notices accompany the package.
-
-Read the [migration contract](docs/MIGRATION.md), [wire contract](docs/ELECTRON_DEVELOPMENT_UI_PROTOCOL.md), and [verification record](docs/VERIFICATION.md). Historical host results do not validate these package bytes. Historical plans remain in `docs/history`; they do not authorize new work.
-
-The package retains legacy internal identifiers and fictional control names for compatibility. They are not imports of the former host's backend or design implementation.
-
-See [third-party notices](THIRD_PARTY_NOTICES.md) and [LICENSE](LICENSE). The repository is private. No npm publication or global installation forms part of this migration.
+[MIT](LICENSE), © 2026 Leonardo Scricca. The original logo is included under the same license. Pi Annotate, OpenChamber tokens, and functional icon assets retain their respective licenses and attribution in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -26,3 +26,5 @@ Retain failed evidence. Report source state, actual checks, skips, and platform 
 ## Delivery
 
 Keep migration records and transferred issues consistent. Preserve unrelated edits. Commit, push, install, archive, deploy, and destructive cleanup require approved scope and fresh-state checks. Global Pi installation is not part of the current migration.
+
+The owner approved public MIT distribution for the initial release. Preserve LICENSE and THIRD_PARTY_NOTICES.md. Further publication and installation require approved scope and fresh-state checks.

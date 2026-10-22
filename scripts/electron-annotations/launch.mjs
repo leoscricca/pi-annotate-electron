@@ -3,11 +3,12 @@ import { randomBytes, randomUUID } from 'node:crypto'
 import { chmod, mkdir, mkdtemp, open, readFile, realpath, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 import { cleanupClosedSyntheticProfile } from './cleanup.mjs'
 
 const repository = resolve(fileURLToPath(new URL('../../', import.meta.url)))
 const runtime = join(repository, 'scripts/electron-annotations/runtime.cjs')
-const electron = join(repository, 'node_modules/electron/dist/Electron.app/Contents/MacOS/Electron')
+const require = createRequire(import.meta.url)
 const wait = ms => new Promise(resolvePromise => { const timer = setTimeout(() => resolvePromise(null), ms); timer.unref() })
 async function json(file) {
   try { return JSON.parse(await readFile(file, 'utf8')) }
@@ -20,9 +21,10 @@ export async function createOwnedAnnotationLaunch(options) {
     || options.foregroundApproved !== undefined && typeof options.foregroundApproved !== 'boolean') {
     throw new Error('ANNOTATION_LAUNCH_REFUSED')
   }
-  if ((await json(join(repository, 'node_modules/electron/package.json'))).version !== '44.4.5') {
+  if ((await json(require.resolve('electron/package.json'))).version !== '44.9.3') {
     throw new Error('ANNOTATION_PREREQUISITE_REFUSED')
   }
+  const electron = require('electron')
   const root = await realpath(await mkdtemp('/tmp/cnc-codex-desktop-'))
   await chmod(root, 0o700)
   const home = join(root, 'home'), profile = join(root, 'profile'), temporary = join(root, 'tmp'), captures = join(root, 'captures')

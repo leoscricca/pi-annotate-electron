@@ -39,7 +39,7 @@ class AnnotationController {
     this.lane.assertCurrent(request)
     const generation = this.generation()
     if (this.loadedGeneration === generation) return
-    const file = path.join(this.context.repository, 'node_modules/pi-annotate/chrome-extension/content.js')
+    const file = require.resolve('pi-annotate/chrome-extension/content.js')
     const source = await fs.readFile(file, 'utf8')
     this.lane.assertCurrent(request)
     if (createHash('sha256').update(source).digest('hex') !== pickerHash) throw new Error('ANNOTATION_PICKER_CHANGED')

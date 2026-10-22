@@ -1,0 +1,27 @@
+name: Verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.0'
+          cache: npm
+      - run: npm ci
+      - run: node node_modules/electron/install.js
+      - run: ./node_modules/.bin/playwright install chromium --only-shell
+      - run: npm run build
+      - run: npm run typecheck
+      - run: npm run check:package
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm test

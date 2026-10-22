@@ -1,5 +1,7 @@
 # Standalone extraction
 
+This document records the original private extraction. On October 22, 2026, the owner subsequently approved public MIT distribution and requested a Pi package release. Current installation and publication status belong to [README.md](../README.md) and [RELEASING.md](RELEASING.md); the historical private-only approvals below describe the earlier migration.
+
 ## Approved scope
 
 The extension moves out of the CnC Mendix Agent application repository. This repository owns its Pi entry, both annotation routes, private bridge, tests, documentation, and required design resources.

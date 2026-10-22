@@ -7,3 +7,6 @@ coverage/
 .env
 .env.*
 *.log
+.pi/
+outputs/
+*.tgz

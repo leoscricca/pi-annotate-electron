@@ -4,13 +4,13 @@
 
 This route opens the package's fictional sample in a new owned Electron child. It does not connect an existing app. The sample has no product agent, live account, or real authentication operation. Fixed operation counters make escaped UI actions observable in tests.
 
-The extraction remains incomplete. Current results belong in [VERIFICATION.md](VERIFICATION.md). The [historical host guide](history/host-guides/ELECTRON_ANNOTATION_FEEDBACK.md) retains the original walkthroughs, counts, and review receipts. Those records do not validate new package bytes.
+The standalone package includes this route and its isolated verification suite. Current results belong in [VERIFICATION.md](VERIFICATION.md). The [historical host guide](history/host-guides/ELECTRON_ANNOTATION_FEEDBACK.md) retains the original walkthroughs, counts, and review receipts. Those records do not validate new package bytes.
 
 [Issue 1](https://github.com/leoscricca/pi-annotate-electron/issues/1) tracks the transferred synthetic annotation work. Use the [attached guide](DEVELOPMENT_UI_CONNECTION.md) for an explicitly bootstrapped development app. The two routes retain separate target kinds and close authority.
 
 ## Prerequisites and isolation
 
-Build this package's sample before Open. Use Node 24.22 or later, local Electron 44.4.5, and Pi Annotate 0.5.2. The host Pi SDK supplies the developer session. The lockfile pins matching SDK packages for local tests only. No browser plugin or global Pi package installation is necessary.
+Build this package's sample before Open. Use Node 24.22 or later, local Electron 44.9.3, and Pi Annotate 0.5.2. The host Pi SDK supplies the developer session. The lockfile pins matching SDK packages for local tests only. No browser plugin or global Pi package installation is necessary.
 
 The helper verifies this picker SHA-256 before use:
 
@@ -101,7 +101,7 @@ The frozen catalog retains all 25 legacy states and 36 legacy control labels. Th
 
 Fresh native checks, zero-capture refusal tests, state restoration, real offline Pi delivery, and independent review remain necessary for the extracted package. Historical owner walkthroughs validate their original bytes only. No existing owner app or historical process forms part of routine tests.
 
-Private sessions, live providers, Windows, signed distribution, deployment, and global installation remain outside this migration. Comments grant no edit authority. Publication follows the separate approved review gate.
+Private sessions, live providers, Windows, signed distribution, deployment, and global installation remain outside this migration. Comments grant no edit authority. The owner approved public MIT distribution; publication status is tracked in the release guide.
 
 ## License
 

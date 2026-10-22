@@ -2,7 +2,7 @@
 
 ## Current implementation status
 
-Source code implements the connection, frontend controls, diagnostics, screenshots, Pi commands, and attached picker. The standalone migration remains incomplete. See the [verification record](VERIFICATION.md) for actual package checks and their limits.
+Source code implements the connection, frontend controls, diagnostics, screenshots, Pi commands, and attached picker. The standalone package includes its external launcher and isolated verification suite. See the [verification record](VERIFICATION.md) for actual package checks and their limits.
 
 Historical host checks covered crops, camera-off notes, keyboard None, zero captures for None, and state restoration. These checks do not validate the extracted package. Historical plans and verification notes remain under `docs/history/openspec/changes/`.
 

@@ -1,6 +1,6 @@
 # Third-party notices
 
-The private project license does not replace the licenses of these resources.
+The project's MIT license does not replace the licenses of these resources.
 
 ## Pi Annotate 0.5.2
 

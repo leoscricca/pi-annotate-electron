@@ -32,7 +32,7 @@ function createPicker({ contents, binding, emit, isCurrent, onRevoked, repositor
   function assert(request) { if (!isCurrent()) throw new OperationFailure('STALE_TARGET', 'revoked'); return lane.assertCurrent(request) }
   async function prepare(request) {
     if (prepared) return
-    const source = await fs.readFile(path.join(repositoryRoot, 'node_modules/pi-annotate/chrome-extension/content.js'), 'utf8')
+    const source = await fs.readFile(require.resolve('pi-annotate/chrome-extension/content.js'), 'utf8')
     assert(request)
     if (createHash('sha256').update(source).digest('hex') !== pickerHash) throw new Error('DEV_UI_PICKER_CHANGED')
     await raw(`(${installPicker.toString()})(${owner})`)

@@ -1,5 +1,26 @@
 # Migration verification
 
+## Public release preparation — October 22, 2026
+
+The owner approved MIT licensing and public GitHub distribution. Release preparation adds visual documentation, original logo concepts, synthetic demo media, package metadata, an executable launcher, built fixture packaging and macOS CI. Electron is pinned to 44.9.3, with the owned-route prerequisite updated to match. Runtime dependency lookup now uses Node resolution so npm-hoisted dependencies work; the pinned picker hash, frozen catalogs and four paint exceptions remain unchanged.
+
+Fresh checks against the release runtime bytes passed:
+
+| Command | Result |
+| --- | --- |
+| `npm run build` | Passed |
+| `npm run typecheck` | Passed |
+| `npm run check:package` | Passed: 29 fixed resources, frozen catalogs, local SDK family and 89 relative imports in 81 source files |
+| `npm test` | **187 passed, one existing foreground walkthrough skipped** |
+| `npm audit --omit=dev --audit-level=moderate` | Zero reported vulnerabilities |
+| `npm pack` | Runtime, executable, built fixture, notices and selected docs/media included; local sessions and historical plans excluded |
+
+Four new package regressions first reproduced missing launcher metadata, missing built fixture and hardcoded dependency paths, then passed after the fixes. A clean production-only archive installation in a private temporary project also passed executable help, actual hidden picker activation, cancellation and normal child close. Full coverage includes actual-launcher terminal signals and delayed cleanup, no-image zero-capture, verified crops, input guards, stale references, draft restoration, explicit reconnect and offline Pi delivery. Logs and local receipts are retained under ignored `outputs/`.
+
+Media was captured from the actual fictional sample in a hidden macOS window, with two literal notes delivered and no images requested. The MP4 is 13 seconds, H.264, 1280×828. Dark/light images and a representative video frame were visually inspected. Logo artwork is original SVG under MIT; third-party functional icon notices remain intact.
+
+Independent release review found no important issues in packaging, dependency resolution, runtime version gate, metadata, docs, media helper or CI. Tests used headless Chromium, hidden macOS Electron, private temporary profiles and offline Pi SDK fixtures. This does not establish foreground focus, arbitrary-app compatibility, Windows, packaged-app support, private-account behavior or live-provider acceptance. npm publication remains pending the owner's publisher account; GitHub release and public-install receipts must be checked separately. Older sections below describe their original source versions.
+
 ## Overlay alignment, layering and card tints — October 22, 2026
 
 Owned icon margins and toolbar button geometry now keep icons centered even when the app applies a global `button svg` margin. Disabled Send remains opaque and dims its arrow, preventing product text from showing through. Each annotation card has an opaque 6% selection-color tint, with matching hovered borders and focus rings.

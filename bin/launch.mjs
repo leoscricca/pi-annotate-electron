@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -9,7 +10,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const names = new Map([['--app','appRoot'],['--entry','entry'],['--renderer','renderer'],['--profile','profile']])
 const args = process.argv.slice(2)
 if (!args.length || args.length === 1 && args[0] === '--help') {
-  console.log('Usage: npm run start:app -- --app APP_ROOT --renderer RELATIVE_HTML [--entry RELATIVE_MAIN] [--profile PROFILE_DIRECTORY]')
+  console.log('Usage: pi-annotate-electron --app APP_ROOT --renderer RELATIVE_HTML [--entry RELATIVE_MAIN] [--profile PROFILE_DIRECTORY]')
   process.exitCode = args.length ? 0 : 1
 } else {
   try {

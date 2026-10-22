@@ -72,8 +72,12 @@ await run('ffmpeg', ['-y', '-i', path.join(media, 'demo.mp4'), '-filter_complex'
 const browser = await chromium.launch({ headless: true })
 try {
   const page = await browser.newPage({ viewport: { width: 900, height: 350 } })
-  const logos = await Promise.all(['logo', 'logo-pointer', 'logo-orbit'].map(name => fs.readFile(path.join(media, name + '.svg'), 'utf8')))
+  const logos = await Promise.all(['logo-focus', 'logo-pointer', 'logo-orbit'].map(name => fs.readFile(path.join(media, name + '.svg'), 'utf8')))
   await page.setContent(`<style>body{margin:0;background:#151413;color:#dbd7cc;font:16px system-ui;display:flex;justify-content:space-evenly;align-items:center;min-height:350px}figure{margin:0;text-align:center}svg{width:128px;height:128px}figcaption{margin-top:22px}</style>${logos.map((logo, index) => `<figure>${logo}<figcaption>${['Focus Note', 'Pointer Note', 'Orbit Mark'][index]}</figcaption></figure>`).join('')}`)
   await page.screenshot({ path: path.join(media, 'logo-options.png') })
+  const primaryLogo = await fs.readFile(path.join(media, 'logo.svg'), 'utf8')
+  await page.setViewportSize({ width: 512, height: 512 })
+  await page.setContent(`<style>body{margin:0;background:transparent}svg{display:block;width:512px;height:512px}</style>${primaryLogo}`)
+  await page.screenshot({ path: path.join(media, 'logo.png'), omitBackground: true })
 } finally { await browser.close() }
 console.log(`Captured synthetic media. Private verification evidence retained at ${root}`)

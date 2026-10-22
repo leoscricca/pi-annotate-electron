@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title">
-  <title id="title">Pi Annotate Electron — Focus Note</title>
+  <title id="title">Pi Annotate Electron — Orbit Mark, violet accent</title>
   <rect x="2" y="2" width="124" height="124" rx="30" fill="#1b1918"/>
-  <g fill="none" stroke="#e2996f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M43 25H30a5 5 0 0 0-5 5v13M85 25h13a5 5 0 0 1 5 5v13M103 85v13a5 5 0 0 1-5 5H85M43 103H30a5 5 0 0 1-5-5V85"/>
-  </g>
-  <path d="M47 43h35a7 7 0 0 1 7 7v23a7 7 0 0 1-7 7H61L45 90V79a7 7 0 0 1-5-7V50a7 7 0 0 1 7-7Z" fill="#479fe6"/>
-  <path d="M52 56h25M52 67h16" fill="none" stroke="#111315" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(-30 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(30 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
+  <ellipse cx="64" cy="64" rx="46" ry="28" transform="rotate(90 64 64)" fill="none" stroke="#e2996f" stroke-width="2.5"/>
+  <path d="M48 44h31a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8H63L48 92V82a8 8 0 0 1-7-8V52a8 8 0 0 1 7-8Z" fill="#479fe6" stroke="#1b1918" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M54 57h20M54 67h13" fill="none" stroke="#13212c" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="103" cy="42" r="7" fill="#B292FF" stroke="#1b1918" stroke-width="3"/>
 </svg>

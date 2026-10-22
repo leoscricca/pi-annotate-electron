@@ -59,7 +59,7 @@ Host SDKs remain peers. Pinned development SDK copies validate isolated tests, n
 
 `npm run demo` captures the actual hidden fictional sample. It needs the project's headless Chromium and an installed `ffmpeg`. It produces `preview.png`, `light.png`, `demo.gif`, `demo.mp4` and the logo comparison. No owner profile or live provider is used.
 
-Focus Note and its two alternatives are original MIT SVGs. Functional third-party icons retain their existing notices and are not repurposed as branding. Preserve canonical resource provenance.
+The current Orbit Mark uses three thin copper loops, a blue annotation bubble and a violet dot. Its SVG and PNG live at `docs/media/logo.svg` and `docs/media/logo.png`. The earlier Focus Note, Pointer Note and initial Orbit concepts remain original MIT SVGs. Functional third-party icons retain their existing notices and are not repurposed as branding. Preserve canonical resource provenance.
 
 Update version, lockfile, install examples and `pi.image` / `pi.video` tag URLs together. Verify public preview URLs after pushing the tag.
 

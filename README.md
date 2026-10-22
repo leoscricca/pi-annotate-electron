@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/media/logo.svg" width="96" height="96" alt="Pi Annotate Electron logo"></p>
+<p align="center"><img src="docs/media/logo.svg" width="96" height="96" alt="Pi Annotate Electron — Orbit Mark with violet accent"></p>
 
 # Pi Annotate Electron
 
@@ -146,7 +146,7 @@ npm test
 
 Native terminal regressions also need Python 3.9 or later, using its standard library. Tests use headless Chromium, hidden macOS Electron windows, fictional data, private temporary profiles, and offline Pi sessions. Host SDKs remain peers; pinned local development copies support isolated tests. Those checks do not establish foreground focus, Windows, packaged-app, or live-provider acceptance.
 
-To regenerate screenshots and the demo with the actual hidden sample, install `ffmpeg` and the headless Chromium dependency above, then run `npm run demo`. The three original vector logo concepts are in [docs/media](docs/media); [compare them](docs/media/logo-options.png). Focus Note is the current mark.
+To regenerate screenshots and the demo with the actual hidden sample, install `ffmpeg` and the headless Chromium dependency above, then run `npm run demo`. The current Orbit Mark combines three thin copper loops, a blue annotation bubble, and a violet accent dot. Original artwork is available as [SVG](docs/media/logo.svg) and [PNG](docs/media/logo.png). The [earlier concepts](docs/media/logo-options.png) remain available for reference.
 
 See [release checks](docs/RELEASING.md), [verification records](docs/VERIFICATION.md), and [design provenance](design/DESIGN.md). Historical documents describe their original source versions.
 

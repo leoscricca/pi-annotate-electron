@@ -6,8 +6,8 @@ import { resolve } from 'node:path'
 const require = createRequire(import.meta.url)
 const { createPicker } = require('../scripts/electron-development-ui/picker.cjs')
 
-async function start(page: Page) {
-  await page.setContent(`<style>${await readFile('design/openchamber/tokens.css', 'utf8')}</style>
+async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appCss?: string } = {}) {
+  await page.setContent(`<style>${await readFile('design/openchamber/tokens.css', 'utf8')}${options.appCss ?? ''}</style>
     <main style="padding:80px;color:var(--surface-foreground);background:var(--surface-background)">
       <button id="target">Connect Codex</button><button id="second" style="margin-left:400px">Settings</button>
       <textarea id="draft">Existing product draft</textarea>
@@ -38,9 +38,105 @@ async function start(page: Page) {
   })
   await page.exposeFunction('annotationPost', (packet: unknown) => picker.receive(packet))
   const before = await page.locator('#target').boundingBox()
-  await picker.start('presentation-request', 'none')
+  await picker.start('presentation-request', mode)
   return { picker, events, before }
 }
+
+test('icon buttons stay centered when the app adds margins to button icons', async ({ page }) => {
+  const { picker } = await start(page, 'none', { appCss: 'button svg { margin-right:6px }' })
+  try {
+    for (const selector of ['.pi-cnc-select', '.pi-cnc-visibility', '#pi-submit']) {
+      const control = (await page.locator(selector).boundingBox())!
+      const icon = (await page.locator(selector + ' svg').boundingBox())!
+      expect(Math.abs(icon.x + icon.width / 2 - control.x - control.width / 2)).toBeLessThan(.25)
+      expect(Math.abs(icon.y + icon.height / 2 - control.y - control.height / 2)).toBeLessThan(.25)
+    }
+  } finally { await picker.close() }
+})
+
+test('empty Send keeps an opaque surface over app content', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    const send = page.getByRole('button', { name: 'Send annotations', exact: true })
+    await expect(send).toBeDisabled()
+    expect(await send.evaluate(node => getComputedStyle(node).opacity)).toBe('1')
+  } finally { await picker.close() }
+})
+
+test('picker controls and notes render above app overlays and clean up their layers', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.evaluate(() => { const node = document.createElement('div'); node.id = 'app-overlay'; node.style.cssText = 'position:fixed;inset:auto 0 0;height:180px;z-index:2147483647;background:salmon'; document.body.append(node) })
+    const send = page.locator('#pi-submit')
+    expect(await send.evaluate(node => { const r = node.getBoundingClientRect(); return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('#pi-panel') !== null })).toBe(true)
+    await page.locator('#target').click()
+    const text = page.getByRole('textbox', { name: 'Feedback', exact: true })
+    await text.click()
+    await text.fill('Keep the picker above the app overlay.')
+    await expect(text).toBeFocused()
+    expect(await text.evaluate(node => { const r = node.getBoundingClientRect(); return !!document.elementFromPoint(r.x + 20, r.bottom - 8)?.closest('.pi-note-card') })).toBe(true)
+    await page.getByRole('button', { name: 'Cancel annotation', exact: true }).click()
+    await expect(page.locator('#pi-panel,.pi-notes-container,#pi-markers,[popover]')).toHaveCount(0)
+    await expect(page.locator('#app-overlay')).toBeVisible()
+    await expect(page.locator('#draft')).toBeFocused()
+  } finally { await picker.close() }
+})
+
+test('dock drags from its corners, stays in the viewport, and leaves controls usable', async ({ page }) => {
+  const { picker, events } = await start(page)
+  try {
+    const dock = page.locator('#pi-panel')
+    const before = (await dock.boundingBox())!
+    await page.mouse.move(before.x + 3, before.y + 3)
+    await page.mouse.down()
+    await page.mouse.move(before.x - 197, before.y - 297, { steps: 4 })
+    await page.mouse.up()
+    const moved = (await dock.boundingBox())!
+    expect(moved.x).toBeCloseTo(before.x - 200, 0)
+    expect(moved.y).toBeCloseTo(before.y - 300, 0)
+    await page.mouse.move(moved.x + moved.width - 3, moved.y + moved.height - 3)
+    await page.mouse.down()
+    await page.mouse.move(2, 2)
+    await page.mouse.up()
+    const edge = (await dock.boundingBox())!
+    expect(edge.x).toBeGreaterThanOrEqual(8)
+    expect(edge.y).toBeGreaterThanOrEqual(8)
+    await page.setViewportSize({ width: 390, height: 600 })
+    await expect.poll(async () => { const box = (await dock.boundingBox())!; return box.x + box.width }).toBeLessThanOrEqual(382)
+    await expect(page.locator('.pi-note-card')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Select an element', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Select an element', exact: true })).toHaveAttribute('aria-pressed', 'false')
+    await page.getByRole('button', { name: 'Cancel annotation', exact: true }).click()
+    await expect.poll(() => events.length).toBe(1)
+    expect(events[0].outcome).toBe('cancelled')
+  } finally { await picker.close() }
+})
+
+test('selection colors match notes and markers and survive deletion and undo', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    for (const id of ['target', 'second']) { await page.locator('#' + id).hover(); await page.locator('#' + id).click() }
+    const color = (selector: string) => page.locator(selector).evaluateAll(nodes => nodes.map(node => getComputedStyle(node).borderColor))
+    const outlines = await color('.pi-marker-outline')
+    expect(new Set(outlines).size).toBe(2)
+    expect(await color('.pi-note-card')).toEqual(outlines)
+    const badgeColors = await page.locator('.pi-note-badge').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).color))
+    expect(badgeColors).toEqual(outlines)
+    const fills = await page.locator('.pi-note-card').evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor))
+    expect(new Set(fills).size).toBe(2)
+    await page.locator('.pi-note-card').first().getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    expect(await color('.pi-marker-outline')).toEqual([outlines[1]])
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    expect(await color('.pi-marker-outline')).toEqual(outlines)
+    // A reselected element is a new annotation; it must not overwrite an older
+    // annotation's saved color when a later undo restores that original card.
+    await page.locator('.pi-note-card').nth(1).getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    await page.evaluate(() => { const node = document.createElement('button'); node.id = 'third'; node.textContent = 'Third control'; node.style.cssText = 'position:fixed;top:200px;left:80px'; document.body.append(node) })
+    for (const id of ['third', 'second']) { await page.locator('#' + id).hover(); await page.locator('#' + id).click() }
+    for (let step = 0; step < 3; step++) await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    expect(await color('.pi-marker-outline')).toEqual(outlines)
+  } finally { await picker.close() }
+})
 
 for (const theme of ['dark', 'light'] as const) {
   for (const width of [980, 1280, 1440]) {
@@ -49,12 +145,12 @@ for (const theme of ['dark', 'light'] as const) {
       const { picker, events, before } = await start(page)
       try {
         await page.evaluate(theme => document.documentElement.dataset.theme = theme, theme)
-        await expect(page.getByText('Electron Annotate', { exact: true })).toBeVisible()
+        await expect(page.getByRole('toolbar', { name: 'Electron Annotate' })).toBeVisible()
         const toolbar = await page.locator('#pi-panel').boundingBox()
         expect(toolbar!.height).toBeLessThanOrEqual(60)
         expect(toolbar!.width).toBeLessThan(600)
         expect(toolbar!.y + toolbar!.height).toBe(884)
-        await expect(page.getByRole('button', { name: 'Send', exact: true })).toBeDisabled()
+        await expect(page.getByRole('button', { name: 'Send annotations', exact: true })).toBeDisabled()
         await page.locator('#target').hover()
         await page.locator('#target').click()
         const note = page.locator('.pi-note-card')
@@ -62,13 +158,18 @@ for (const theme of ['dark', 'light'] as const) {
         await expect(note.getByRole('textbox', { name: 'Feedback' })).toBeFocused()
         await expect(page.locator('#pi-tooltip')).toBeHidden({ timeout: 500 })
         await note.getByRole('textbox', { name: 'Feedback' }).fill('Reduce the button padding.')
-        await expect(note.getByRole('combobox', { name: 'Screenshot' })).toHaveValue('none')
-        await note.getByRole('combobox', { name: 'Screenshot' }).selectOption('crop')
+        await expect(note.locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'false')
+        await note.locator('.pi-note-screenshot').click()
         await expect(page.locator('#pi-ss-each')).toHaveClass(/active/)
-        await note.getByRole('combobox', { name: 'Screenshot' }).selectOption('none')
+        await note.locator('.pi-note-screenshot').click()
         expect(await page.locator('#target').boundingBox()).toEqual(before)
-        const color = await note.evaluate(node => getComputedStyle(node).backgroundColor)
-        expect(color).toBe(theme === 'dark' ? 'rgb(27, 25, 24)' : 'rgb(243, 242, 240)')
+        const color = await note.evaluate(node => {
+          const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1
+          const context = canvas.getContext('2d')!
+          context.fillStyle = getComputedStyle(node).backgroundColor; context.fillRect(0, 0, 1, 1)
+          return [...context.getImageData(0, 0, 1, 1).data]
+        })
+        expect(color).toEqual(theme === 'dark' ? [30, 33, 36, 255] : [231, 234, 236, 255])
         const label = note.locator('.pi-note-header')
         const box = await label.boundingBox()
         await page.mouse.move(box!.x + 50, box!.y + 12)
@@ -76,7 +177,7 @@ for (const theme of ['dark', 'light'] as const) {
         await page.mouse.move(box!.x + 90, box!.y + 50)
         await page.mouse.up()
         expect((await label.boundingBox())!.x).toBeGreaterThan(box!.x)
-        await page.getByRole('button', { name: 'Send', exact: true }).click()
+        await page.getByRole('button', { name: 'Send annotations', exact: true }).click()
         await expect(page.locator('#pi-panel')).toHaveCount(0)
         await expect.poll(() => events.length).toBe(1)
         expect(events[0]).toMatchObject({ kind: 'annotation', outcome: 'submitted', mode: 'none', notes: [{ name: 'Connect Codex', comment: 'Reduce the button padding.' }] })
@@ -89,19 +190,63 @@ for (const theme of ['dark', 'light'] as const) {
   }
 }
 
+test('multi-note screenshot choices stay independent', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await expect(page.getByRole('button', { name: 'Select an element', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    for (const id of ['target', 'second']) { await page.locator('#' + id).hover(); await page.locator('#' + id).click() }
+    const notes = page.locator('.pi-note-card')
+    await expect(notes).toHaveCount(2)
+    const first = notes.nth(0).locator('.pi-note-screenshot')
+    const second = notes.nth(1).locator('.pi-note-screenshot')
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(second).toHaveAttribute('aria-pressed', 'false')
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'true')
+    await expect(second).toHaveAttribute('aria-pressed', 'false')
+    await second.click()
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(second).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.locator('#pi-ss-each')).toHaveClass(/active/)
+  } finally { await picker.close() }
+})
+
+test('new notes keep the initial Crop choice after earlier notes change mode', async ({ page }) => {
+  const { picker } = await start(page, 'crop')
+  try {
+    await expect(page.getByRole('button', { name: 'Select an element', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await page.locator('#target').hover()
+    await page.locator('#target').click()
+    const notes = page.locator('.pi-note-card')
+    await expect(notes).toHaveCount(1)
+    const first = notes.nth(0).locator('.pi-note-screenshot')
+    await expect(first).toHaveAttribute('aria-pressed', 'true')
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(page.locator('#pi-ss-none')).toHaveClass(/active/)
+    await page.locator('#second').hover()
+    await page.locator('#second').click()
+    await expect(notes).toHaveCount(2)
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(notes.nth(1).locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.locator('#pi-ss-each')).toHaveClass(/active/)
+  } finally { await picker.close() }
+})
+
 test('multi-selection and X cancellation retain the same picker connection', async ({ page }) => {
   const { picker, events } = await start(page)
   try {
-    await page.getByRole('button', { name: 'Select multiple elements' }).click()
+    await expect(page.getByRole('button', { name: 'Select an element' })).toHaveAttribute('aria-pressed', 'true')
     for (const id of ['target', 'second']) { await page.locator('#' + id).hover(); await page.locator('#' + id).click() }
     await expect(page.locator('.pi-note-card')).toHaveCount(2)
-    await expect(page.locator('#pi-count')).toHaveText('2 selected')
+    await expect(page.locator('#pi-count')).toHaveText('2')
     await page.getByRole('button', { name: 'Cancel annotation' }).click()
     await expect(page.locator('#pi-panel')).toHaveCount(0)
     await expect.poll(() => events.length).toBe(1)
     expect(events[0]).toMatchObject({ outcome: 'cancelled', notes: [] })
     await picker.start('presentation-resumed', 'none')
-    await expect(page.getByText('Electron Annotate', { exact: true })).toBeVisible()
+    await expect(page.getByRole('toolbar', { name: 'Electron Annotate' })).toBeVisible()
     await expect(page.locator('#draft')).toHaveValue('Existing product draft')
   } finally { await picker.close() }
 })
@@ -125,5 +270,123 @@ test('a growing note stays above the toolbar near the viewport edge', async ({ p
     }).toBe(true)
     await expect(page.locator('#pi-markers .pi-marker-outline')).toBeVisible()
     await expect(page.locator('.pi-connectors')).toBeHidden()
+  } finally { await picker.close() }
+})
+
+test('floating note details stay under the pointer and minimize preserves the draft', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    const card = page.locator('.pi-note-card')
+    const text = card.getByRole('textbox', { name: 'Feedback' })
+    await text.fill('Keep this exact draft.')
+    const toggle = card.locator('.pi-cnc-details-toggle')
+    await expect(toggle).toBeVisible()
+    const point = (await toggle.boundingBox())!
+    for (let index = 0; index < 4; index++) {
+      await page.mouse.click(point.x + point.width / 2, point.y + point.height / 2)
+      await expect(toggle).toHaveAttribute('aria-expanded', String(index % 2 === 0))
+      const next = (await toggle.boundingBox())!
+      expect(next.x).toBeCloseTo(point.x, 1)
+      expect(next.y).toBeCloseTo(point.y, 1)
+    }
+    await toggle.click()
+    await expect(card.getByRole('region', { name: 'Selected element details' })).toContainText('#target')
+    await card.getByRole('button', { name: 'Minimize annotation', exact: true }).click()
+    await expect(text).toBeHidden()
+    await expect(page.locator('#pi-count')).toContainText('1')
+    await page.locator('.pi-marker-badge').click()
+    await expect(text).toHaveValue('Keep this exact draft.')
+    await expect(text).toBeVisible()
+  } finally { await picker.close() }
+})
+
+test('floating history restores deleted notes, original editor nodes and independent image choices', async ({ page }) => {
+  const { picker, events } = await start(page)
+  try {
+    for (const id of ['target', 'second']) await page.locator('#' + id).click()
+    const cards = page.locator('.pi-note-card')
+    await expect(cards).toHaveCount(2)
+    await cards.nth(0).getByRole('textbox', { name: 'Feedback' }).fill('First literal note {{keep}}')
+    await cards.nth(1).getByRole('textbox', { name: 'Feedback' }).fill('Second note')
+    await cards.nth(0).getByRole('button', { name: 'Add screenshot', exact: true }).click()
+    await page.evaluate(() => { (window as any).originalEditor = document.querySelector('.pi-note-textarea') })
+    await cards.nth(0).getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    await expect(cards).toHaveCount(1)
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(cards).toHaveCount(2)
+    expect(await page.evaluate(() => document.querySelector('.pi-note-textarea') === (window as any).originalEditor)).toBe(true)
+    await expect(cards.nth(0).getByRole('textbox', { name: 'Feedback' })).toHaveValue('First literal note {{keep}}')
+    await expect(cards.nth(0).getByRole('button', { name: 'Remove screenshot', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await expect(cards.nth(1).getByRole('button', { name: 'Add screenshot', exact: true })).toHaveAttribute('aria-pressed', 'false')
+    await page.getByRole('button', { name: 'Redo annotation change', exact: true }).click()
+    await expect(cards).toHaveCount(1)
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await cards.nth(0).getByRole('button', { name: 'Remove screenshot', exact: true }).click()
+    await page.getByRole('button', { name: 'Hide annotations', exact: true }).click()
+    await expect(cards.nth(0)).toBeHidden()
+    await expect(page.locator('#pi-markers')).toBeHidden()
+    await page.getByRole('button', { name: 'Send annotations', exact: true }).click()
+    await expect.poll(() => events.length).toBe(1)
+    expect(events[0]).toMatchObject({ outcome: 'submitted', mode: 'none', notes: [
+      { name: 'Connect Codex', comment: 'First literal note {{keep}}' }, { name: 'Settings', comment: 'Second note' },
+    ] })
+  } finally { await picker.close() }
+})
+
+test('floating history refuses a replacement element instead of following its selector', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    await page.getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    await page.evaluate(() => { const target = document.getElementById('target')!; target.replaceWith(target.cloneNode(true)) })
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(page.locator('.pi-note-card')).toHaveCount(0)
+    await expect(page.getByRole('status')).toContainText('changed')
+    await expect(page.getByRole('button', { name: 'Send annotations', exact: true })).toBeDisabled()
+  } finally { await picker.close() }
+})
+
+test('changing image intent after undo discards the old redo branch', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    await page.getByRole('button', { name: 'Add screenshot', exact: true }).click()
+    await page.locator('#second').click()
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await page.getByRole('button', { name: 'Remove screenshot', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Redo annotation change', exact: true })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Add screenshot', exact: true })).toHaveAttribute('aria-pressed', 'false')
+  } finally { await picker.close() }
+})
+
+test('annotation history preserves newer drafts and image choices on surviving notes', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    const first = page.locator('.pi-note-card').nth(0)
+    await first.getByRole('textbox', { name: 'Feedback' }).fill('Initial draft')
+    await page.locator('#second').click()
+    await first.getByRole('textbox', { name: 'Feedback' }).fill('Latest surviving draft')
+    await first.getByRole('button', { name: 'Add screenshot', exact: true }).click()
+    await page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(page.locator('.pi-note-card')).toHaveCount(1)
+    await expect(first.getByRole('textbox', { name: 'Feedback' })).toHaveValue('Latest surviving draft')
+    await expect(first.getByRole('button', { name: 'Remove screenshot', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await page.getByRole('button', { name: 'Redo annotation change', exact: true }).click()
+    await expect(first.getByRole('textbox', { name: 'Feedback' })).toHaveValue('Latest surviving draft')
+  } finally { await picker.close() }
+})
+
+test('typing a short draft preserves the writing area and stationary footer', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    const text = page.getByRole('textbox', { name: 'Feedback' })
+    const before = (await text.boundingBox())!
+    const toggleBefore = (await page.locator('.pi-cnc-details-toggle').boundingBox())!
+    await text.fill('Short draft')
+    expect((await text.boundingBox())!.height).toBeGreaterThanOrEqual(before.height)
+    expect((await page.locator('.pi-cnc-details-toggle').boundingBox())!.y).toBeCloseTo(toggleBefore.y, 1)
   } finally { await picker.close() }
 })

@@ -5,6 +5,7 @@ const { nativeImage } = require('electron')
 const { AnnotationRequestLane } = require('./request.cjs')
 const { canonicalCrops, dimensions } = require('./images.cjs')
 const { presentationSource } = require('./presentation.cjs')
+const { pickerSource } = require('./picker-source.cjs')
 
 const pickerHash = 'a6833ff7e68d8b1572987079ddb82924bc9c148ff1fb9826134a4ccdce020d3d'
 class AnnotationController {
@@ -61,7 +62,7 @@ class AnnotationController {
     this.lane.assertCurrent(request)
     await this.world(renderer)
     this.lane.assertCurrent(request)
-    await this.world(source)
+    await this.world(pickerSource(source))
     this.lane.assertCurrent(request)
     await this.world(await presentationSource(this.context.repository))
     this.lane.assertCurrent(request)

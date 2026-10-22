@@ -15,8 +15,21 @@
     "design/licenses/pi-annotate-MIT.txt": "2d20dfacd9742706e564470dc77438608a1e54b0ed46959f080709389209093c",
     "tests/fixtures/legacy-synthetic-catalog.json": "ea49a79354e47e3c0e0420ffa662477dbba955b3cf4221391822358a06fc808c",
     "scripts/electron-annotations/content-policy.js": "408fbeda1454f7d43b874a96ef1e4dfb5f3b503b8f85b8bbdae6c65b2704db36",
-    "scripts/electron-annotations/presentation.css": "4878e021c84161d82ad13a53f1fc5c075fa42291e56b2e07a51e5eda59bfaccb",
-    "tests/fixtures/sample-synthetic-states.json": "64070e7a63a754e696ac963778011fac959f21f00be9ff3864ba5fc70705acec"
+    "scripts/electron-annotations/presentation.css": "b556f2d9ad9c78ff92678e078347f6e45947d3c9fb0b8c8d4ac522c10a4e8b35",
+    "tests/fixtures/sample-synthetic-states.json": "64070e7a63a754e696ac963778011fac959f21f00be9ff3864ba5fc70705acec",
+    "design/icons/add-line.svg": "b03a98dbb2f1d4c1aed7987ce4be58b6af4b4be8af47b08aadb77c4a35d6a645",
+    "design/icons/arrow-go-back-line.svg": "03aace204af1b57c5d9de601cb83a53714ad26fd4fb472ede99fa09faa421b80",
+    "design/icons/arrow-go-forward-line.svg": "f116e6ecf9228d9664f60b8630746a3357acc610ecf3c06e127f734b2feeecbc",
+    "design/icons/arrow-up-line.svg": "047242b33db3e4a7c2aa9bfd0786c5c6e4a5dd6c3742770e7500cc7923a17554",
+    "design/icons/chat-3-line.svg": "2eb2ba8ca9991ec814331c7713a9c0a59ad938f78e5584bcae760f46c02e39c4",
+    "design/icons/code-s-slash-line.svg": "daa927c289019fa5352855afc6c963d485158471ef390a5c390ebfacbbddf8bf",
+    "design/icons/delete-bin-6-line.svg": "94d4fc959f875e922e6f092e67fa3cbc390054369fe6f4d5e2fdbf60e120a283",
+    "design/icons/eye-line.svg": "0101daab7743cbeecf16406e5c449c26eff56be4d5b94d5dcd4d1a36d49e77f0",
+    "design/icons/eye-off-line.svg": "4a862972803b8ecbed2d162e189252d0e9a743afddceda2b7c6d776d660aa820",
+    "design/icons/focus-3-line.svg": "f28664fdc22722960be7ca17ce8376c98e61498d04b7ecfa062fd63e4578a1a9",
+    "design/icons/image-line.svg": "da8ec323a5f37d6e7feacce550f2ba25c3f6e0fd37b94b4ac652dbd809130d4e",
+    "design/icons/subtract-line.svg": "6a2124deaf49da77a3cf311b59923f3174ba5b15bcec4666bff9cdc298166ba1",
+    "design/licenses/remix-icon-4.6.0-Apache-2.0.txt": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
   },
   "upstreamPicker": {
     "package": "pi-annotate",

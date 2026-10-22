@@ -38,7 +38,7 @@ The connection command requires interactive owner context. With no compatible wi
 | --- | --- |
 | `/annotate-electron connect` | Without a connection, the owner selects a compatible window. With a live connection, the command reopens its idle picker. After confirmed retirement, the command can discover a new compatible window. An already active picker retains its notes. |
 | `/annotate-electron none` | The command starts another picker without screenshots. An active picker prevents another start. |
-| `/annotate-electron crop` | The command starts another picker with per-note crops. Each note's Include element crop button controls its image. |
+| `/annotate-electron crop` | The command starts another picker with per-note crops. Each note's Add screenshot / Element crop button controls its image. |
 | `/annotate-electron cancel` | The command cancels the current picker after its work and cleanup settle. The connection remains open. |
 | `/annotate-electron status` | The command reports the selected state or retained cleanup block. |
 | `/annotate-electron disconnect` | The command releases the connection without app closure. Verified capture files remain on disk. |
@@ -51,9 +51,15 @@ The picker close button, Cancel, and Escape close only annotation controls. The 
 
 To release the connection, use `/annotate-electron disconnect`. To choose another window, disconnect before another `connect`.
 
-The picker uses the unchanged pinned Pi Annotate asset with the local Electron Annotate presentation. A compact bottom toolbar offers single or multiple selection, the selected count, Send, and X. Floating notes use copied OpenChamber tokens within their own scope. They retain their drag behavior and parent/child selection. Each note has a feedback field and a Screenshot choice. None and Element crop change the shared capture mode; Include element crop controls an individual note within Crop mode. None mode performs no native capture.
+The picker verifies the pinned Pi Annotate asset and adds a fixed annotation-state compatibility hook with the local Electron Annotate presentation. An icon toolbar offers additive selection, show/hide annotations, undo, redo, the selected count and cancellation, beside a separate circular Send button. Notes retain their drag behavior and scoped OpenChamber tokens. A dash minimizes; a plus or numbered marker reopens; a bin deletes. Undo/redo restores added/deleted notes with original node identity, literal text and image choice, without replaying product input. Parent/child selection and element facts are in the collapsible details region. Its footer code icon stays stationary as details expand above it.
+
+Each note has a feedback field and its own screenshot button: Add screenshot when off, Element crop when on. In None mode, each note starts without an image. In Crop mode, each note starts with an element crop. Each new note uses the picker's initial choice, even after earlier notes change the shared mode.
+
+Change a note's choice to affect only that note. The app captures one viewport only when at least one note requests a crop, then saves only the requested element crops. None mode performs zero native captures.
 
 Space or Enter selects the focused product control without its normal action. Escape or X cancels the picker. The command and tool identifiers remain `/annotate-electron` and `annotate_electron`. To load this presentation in an older instance, manually restart the development app and reload the project Pi extension before connecting again. The styling change does not restart the owner's app.
+
+The picker renders above ordinary application overlays in the browser's top layer. Native HTML modal dialogs (`dialog.showModal()`) must be closed before picker activation. Opening one during annotation cancels the current unsent notes and retains the UI connection; the picker does not move its controls into the app dialog or change app modality. Start annotation explicitly again after closing the modal.
 
 ## Model UI tools
 

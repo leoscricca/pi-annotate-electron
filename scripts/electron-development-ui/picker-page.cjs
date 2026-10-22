@@ -166,6 +166,7 @@ function installPicker(connection) {
     altKey: false, button: 0, preventDefault() {}, stopPropagation() {}, stopImmediatePropagation() {} } }
   bridge.onHover(point => {
     if (!current || current.stopping) return
+    if (window.__CNC_ANNOTATION_PICKER_STATE__?.moveDrag(point)) return
     const node = document.elementFromPoint(point.x, point.y)
     if (node && !own(node)) { current.hover = point; handlers.get('mousemove')?.call(document, fake(node, point)) }
   })
@@ -231,7 +232,7 @@ function installPicker(connection) {
         finally { if (before) Object.defineProperty(document, 'addEventListener', before); else delete document.addEventListener }
         controls()
         document.getElementById(params.mode === 'none' ? 'pi-ss-none' : 'pi-ss-each').click()
-        window.__CNC_ANNOTATION_PRESENTATION__.start()
+        window.__CNC_ANNOTATION_PRESENTATION__.start({ defaultScreenshot: params.mode === 'crop' })
         if (!document.getElementById('pi-panel')) fail()
         return { active: true }
       }
@@ -247,6 +248,7 @@ function installPicker(connection) {
         if (chromeBefore) Object.defineProperty(window, 'chrome', chromeBefore); else delete window.chrome
         delete window.__CNC_DEV_PICKER__
         delete window.__CNC_ANNOTATION_PRESENTATION__
+        delete window.__CNC_ANNOTATION_PICKER_STATE__
         return { restored: true }
       }
       fail()

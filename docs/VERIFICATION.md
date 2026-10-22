@@ -1,5 +1,50 @@
 # Migration verification
 
+## Overlay alignment, layering and card tints — October 22, 2026
+
+Owned icon margins and toolbar button geometry now keep icons centered even when the app applies a global `button svg` margin. Disabled Send remains opaque and dims its arrow, preventing product text from showing through. Each annotation card has an opaque 6% selection-color tint, with matching hovered borders and focus rings.
+
+The original overlay roots render as manual popovers in the browser's top layer, above ordinary application overlays even at the maximum CSS z-index. They remain separate from product event paths. An active native HTML modal refuses picker startup; a modal opened during annotation cancels the picker, retains the connection and leaves the dialog intact. No native-modal annotation support is claimed.
+
+Final `npm run build`, `npm run typecheck`, `npm run check:package` and `npm test` passed against these runtime bytes. The suite passed **183 tests**, with the existing foreground walkthrough skipped. Package checks retained all 29 fixed resources, frozen catalogs, canonical tokens, licensed icons and the dependency picker hash. The final log is `outputs/overlay-layer-verified.log`.
+
+Three new headless browser regressions first failed for icon displacement, disabled Send transparency and overlay stacking. Existing color/history coverage now checks distinct card fills; theme coverage checks opaque tinted pixels in dark and light. A hidden native Electron regression verifies modal-triggered cancellation without app activation, modal focus preservation, cleanup, refusal while a modal remains active and explicit reactivation after it closes. Native dock/note drags also passed. Independent review found no remaining important issues after the modal boundary was corrected.
+
+Visual checks covered dark desktop and light 390px layouts, including the empty dock above product controls and the colored cards. Both measured icon center offsets were zero. The full suite retained capture refusals, zero-capture None, input guards, restoration, stale references, reconnect, delayed cleanup and actual-launcher terminal checks. Checks used hidden macOS windows, synthetic content and private profiles; no foreground owner app, global installation, commit or publication was used.
+
+## Dock, editor padding and selection colors — October 22, 2026
+
+The shared overlay now supports dragging the dock from its edges, corners and spaces between buttons, with pointer capture and viewport bounds. Moved docks stay inside a resized window and reset for a new annotation request. Textareas retain their 159px writing area with 12px padding on all sides. Each annotation has a distinct token-derived accent across its outline, marker, card border and note badge; original cards retain their colors through undo, including delete/reselect history branches.
+
+Final `npm run build`, `npm run typecheck`, `npm run check:package` and `npm test` passed against these runtime bytes. The full suite passed **179 tests**, with the existing foreground walkthrough skipped. Package checks verified 29 fixed resources and the unchanged frozen catalogs, canonical tokens and dependency picker hash. The final log is `outputs/dock-refinement-final.log`.
+
+Two added headless browser regressions exercise dock movement, viewport clamping, usable controls and stable annotation colors through history. A hidden native Electron regression exercises pointer capture, release, subsequent selection without product activation, cancellation and dock reset. Visual checks covered dark desktop and light 390px layouts and confirmed 12px textarea padding in all directions.
+
+The first full run passed 171 tests and failed all eight synthetic annotation-flow variants, with one existing skip: direct style changes on transient marker nodes left mutation records after those nodes were rebuilt. Moving accent updates into a stable owned stylesheet fixed those failures without changing the content guard. All 26 focused presentation and synthetic-flow tests then passed. Independent review reproduced a color/history collision; the regression failed before colors were tied to original annotation cards and passed after the fix. Review found no further important issues.
+
+Checks remain headless or hidden on macOS with synthetic content and private test profiles. No foreground owner walkthrough, Windows or packaged-app acceptance, owner app restart, installation, commit or publication was performed. Earlier verification sections below describe prior runtime versions.
+
+## Floating annotation interface — October 22, 2026
+
+The approved floating toolbar and note editor are implemented in the shared presentation for both routes. Validation ran against the uncommitted runtime bytes, using project-local dependencies, headless Chromium, hidden macOS Electron windows, synthetic data, private test profiles and offline Pi sessions.
+
+| Command | Result |
+| --- | --- |
+| `npm run build` | Passed |
+| `npm run typecheck` | Passed |
+| `npm run check:package` | Passed: 29 fixed resources and 88 relative imports in 79 source files; frozen catalogs and canonical token exports preserved |
+| `npm test` | 176 passed, one existing foreground walkthrough skipped |
+
+Six new presentation regressions cover the stationary details toggle and minimized draft, original editor-node restoration and independent image choices, replaced-node refusal, screenshot changes after undo, surviving draft/image preservation, and the writing area's height after input. Existing presentation coverage was migrated to the accessible icon buttons without removing its delivery, geometry, theme, cancellation, or restoration assertions.
+
+Native tests additionally exercised delete/undo/redo through real capture and delivery, and hidden/minimized None notes through zero-capture submission. The full suite retained capture refusals, input isolation, draft/focus restoration, stale references, explicit reconnect, delayed cleanup, normal close/quit and actual-launcher terminal regressions.
+
+The first full run passed 172 tests and failed the native drag-across-card-boundary regression, with the existing foreground skip. The fixed local drag hook now forwards only an already active owned drag through the existing guarded pointer path; it does not release product guards or dispatch product input. The focused native recheck passed. Independent review also found stale surviving-note state in undo and upstream textarea shrinking; both were reproduced with failing tests, fixed, and independently rechecked before the passing final suite.
+
+The dependency picker file and hash remain unchanged. Evaluation adds a fixed local annotation-state hook after hash verification. New SVG copies retain their v4.6.0 Apache 2.0 license and provenance. No tool/wire schema, synthetic policy/catalog, product authentication, provider configuration, global installation or distribution was changed. Earlier uncommitted screenshot corrections remain included.
+
+This verifies hidden macOS development workflows. It does not establish foreground focus, packaged/Windows support, live-provider acceptance, or owner-profile behavior. No owner application was restarted, and no commit, push, global installation or publication was performed. The migration records below describe earlier runs.
+
 ## Current status
 
 The source transfer, application checks, and independent source review are complete. Final verification matched all 129 package identities and 815 baseline-backed original identities. Publication remains limited to the approved new private repository. Actual publication receipts belong to the private migration journal. Memory-removal limits remain in `MIGRATION.md`.

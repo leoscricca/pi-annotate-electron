@@ -8,6 +8,7 @@ const { decodeEvent, validateViewport } = require('./protocol.cjs')
 const { captureBytes } = require('./capture.cjs')
 const { installPicker } = require('./picker-page.cjs')
 const { presentationSource } = require('../electron-annotations/presentation.cjs')
+const { pickerSource } = require('../electron-annotations/picker-source.cjs')
 const pickerHash = 'a6833ff7e68d8b1572987079ddb82924bc9c148ff1fb9826134a4ccdce020d3d'
 
 function createPicker({ contents, binding, emit, isCurrent, onRevoked, repositoryRoot, images }) {
@@ -36,7 +37,7 @@ function createPicker({ contents, binding, emit, isCurrent, onRevoked, repositor
     if (createHash('sha256').update(source).digest('hex') !== pickerHash) throw new Error('DEV_UI_PICKER_CHANGED')
     await raw(`(${installPicker.toString()})(${owner})`)
     installed = true; assert(request)
-    await raw(source)
+    await raw(pickerSource(source))
     assert(request)
     await raw(await presentationSource(repositoryRoot))
     assert(request); prepared = true

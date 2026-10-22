@@ -664,6 +664,16 @@ test('attached keyboard None selection suppresses product actions and returns on
     await expect(settings).toHaveAttribute('data-product-activations', '0')
     await expect(f.page.getByRole('dialog')).toHaveCount(0)
     await f.page.locator('.pi-note-textarea').fill('Literal local UI note: const path = "/tmp/not-executed";')
+    await f.page.getByRole('button', { name: 'Show element details', exact: true }).click()
+    await expect(f.page.getByRole('region', { name: 'Selected element details' })).toContainText('button')
+    await f.page.getByRole('button', { name: 'Minimize annotation', exact: true }).click()
+    await expect(f.page.locator('.pi-note-textarea')).toBeHidden()
+    await f.page.getByRole('button', { name: 'Expand annotation', exact: true }).click()
+    await f.page.getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    await expect(f.page.locator('.pi-note-card')).toHaveCount(0)
+    await f.page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(f.page.locator('.pi-note-textarea')).toHaveValue('Literal local UI note: const path = "/tmp/not-executed";')
+    await f.page.getByRole('button', { name: 'Hide annotations', exact: true }).click()
     await f.page.locator('#pi-submit').click()
     await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(1)
     const result = events.find(event => event.kind === 'annotation')
@@ -719,7 +729,7 @@ test('attached Crop saves only canonical crops and camera-off annotation adds no
     await f.page.locator('#pi-submit').click()
     await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(2)
     const second = events.filter(event => event.kind === 'annotation')[1]
-    expect(second).toMatchObject({ outcome: 'submitted', mode: 'crop', notes: [{ comment: 'Camera off retains a literal note.' }] })
+    expect(second).toMatchObject({ outcome: 'submitted', mode: 'none', notes: [{ comment: 'Camera off retains a literal note.' }] })
     expect(second.notes[0]).not.toHaveProperty('image')
     expect(await f.application.evaluate(() => (globalThis as unknown as { __CNC_TEST_PICKER_CAPTURE__: { calls: number } }).__CNC_TEST_PICKER_CAPTURE__.calls)).toBe(1)
     expect((await ui.request('status')).value).toEqual({ state: 'connected-idle' })
@@ -729,6 +739,108 @@ test('attached Crop saves only canonical crops and camera-off annotation adds no
     await f.application.evaluate(() => {
       const root = globalThis as unknown as { __CNC_TEST_PICKER_CAPTURE__?: { restore: () => void } }
       root.__CNC_TEST_PICKER_CAPTURE__?.restore(); delete root.__CNC_TEST_PICKER_CAPTURE__
+    })
+  }
+})
+
+test('attached mixed screenshot choices capture only notes that request crops', async () => {
+  const f = await launch(path.join(output, 'main/index.js'))
+  await f.application.evaluate(({ BrowserWindow }) => {
+    const contents = BrowserWindow.getAllWindows()[0]!.webContents
+    const original = contents.capturePage
+    const state = { calls: 0, restore: () => { contents.capturePage = original } }
+    contents.capturePage = async (rect, options) => { state.calls += 1; return original.call(contents, rect, options) }
+    ;(globalThis as unknown as { __CNC_TEST_MIXED_CAPTURE__: typeof state }).__CNC_TEST_MIXED_CAPTURE__ = state
+  })
+  const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
+  const events: any[] = []
+  const ui = await connectDevelopmentTarget(target, { directory: f.registry, session: 'mixed-note-capture', onEvent: (event: unknown) => events.push(event) })
+  try {
+    await ui.request('annotate', { mode: 'none' })
+    await expect(f.page.getByRole('button', { name: 'Select an element', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    for (const name of ['Settings', 'Files']) await f.page.getByRole('button', { name, exact: true }).click()
+    const notes = f.page.locator('.pi-note-card')
+    await expect(notes).toHaveCount(2)
+    await notes.nth(0).locator('.pi-note-screenshot').click()
+    await expect(notes.nth(1).getByRole('button', { name: 'Add screenshot', exact: true })).toHaveAttribute('aria-pressed', 'false')
+    await expect(notes.nth(0).locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'true')
+    await expect(notes.nth(1).locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'false')
+    await notes.nth(0).locator('.pi-note-textarea').fill('Capture the Settings control.')
+    await notes.nth(1).locator('.pi-note-textarea').fill('Do not capture the Files control.')
+    await notes.nth(0).getByRole('button', { name: 'Delete annotation', exact: true }).click()
+    await f.page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(notes.nth(0).getByRole('button', { name: 'Remove screenshot', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await f.page.getByRole('button', { name: 'Redo annotation change', exact: true }).click()
+    await expect(notes).toHaveCount(1)
+    await f.page.getByRole('button', { name: 'Undo annotation change', exact: true }).click()
+    await expect(notes).toHaveCount(2)
+    await f.page.locator('#pi-submit').click()
+    await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(1)
+    const event = events.find(value => value.kind === 'annotation')
+    expect(event).toMatchObject({ outcome: 'submitted', mode: 'crop', notes: [
+      { name: 'Settings', comment: 'Capture the Settings control.', image: { mime: 'image/png' } },
+      { name: 'Files', comment: 'Do not capture the Files control.' },
+    ] })
+    expect(event.notes[1]).not.toHaveProperty('image')
+    const bytes = await readVerifiedImage(event.notes[0].image, ui.binding.connection)
+    expect(bytes.length).toBe(event.notes[0].image.bytes)
+    expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
+    expect(await f.application.evaluate(() => (globalThis as unknown as { __CNC_TEST_MIXED_CAPTURE__: { calls: number } }).__CNC_TEST_MIXED_CAPTURE__.calls)).toBe(1)
+  } finally {
+    await pickerEvidence(f.application, f.root, ui.binding.connection, events)
+    await ui.close()
+    await f.application.evaluate(() => {
+      const root = globalThis as unknown as { __CNC_TEST_MIXED_CAPTURE__?: { restore: () => void } }
+      root.__CNC_TEST_MIXED_CAPTURE__?.restore(); delete root.__CNC_TEST_MIXED_CAPTURE__
+    })
+  }
+})
+
+test('attached Crop defaults a later note to a crop after the first note opts out', async () => {
+  const f = await launch(path.join(output, 'main/index.js'))
+  await f.application.evaluate(({ BrowserWindow }) => {
+    const contents = BrowserWindow.getAllWindows()[0]!.webContents
+    const original = contents.capturePage
+    const state = { calls: 0, restore: () => { contents.capturePage = original } }
+    contents.capturePage = async (rect, options) => { state.calls += 1; return original.call(contents, rect, options) }
+    ;(globalThis as unknown as { __CNC_TEST_LATE_CAPTURE__: typeof state }).__CNC_TEST_LATE_CAPTURE__ = state
+  })
+  const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
+  const events: any[] = []
+  const ui = await connectDevelopmentTarget(target, { directory: f.registry, session: 'late-crop-note', onEvent: (event: unknown) => events.push(event) })
+  try {
+    await ui.request('annotate', { mode: 'crop' })
+    await expect(f.page.getByRole('button', { name: 'Select an element', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await f.page.getByRole('button', { name: 'Settings', exact: true }).click()
+    const notes = f.page.locator('.pi-note-card')
+    await expect(notes).toHaveCount(1)
+    const first = notes.nth(0).locator('.pi-note-screenshot')
+    await expect(first).toHaveAttribute('aria-pressed', 'true')
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await f.page.getByRole('button', { name: 'Files', exact: true }).click()
+    await expect(notes).toHaveCount(2)
+    await expect(first).toHaveAttribute('aria-pressed', 'false')
+    await expect(notes.nth(1).locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'true')
+    await f.page.locator('.pi-note-textarea').nth(0).fill('Do not capture the Settings control.')
+    await f.page.locator('.pi-note-textarea').nth(1).fill('Capture the Files control.')
+    await f.page.locator('#pi-submit').click()
+    await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(1)
+    const event = events.find(value => value.kind === 'annotation')
+    expect(event).toMatchObject({ outcome: 'submitted', mode: 'crop', notes: [
+      { name: 'Settings', comment: 'Do not capture the Settings control.' },
+      { name: 'Files', comment: 'Capture the Files control.', image: { mime: 'image/png' } },
+    ] })
+    expect(event.notes[0]).not.toHaveProperty('image')
+    const bytes = await readVerifiedImage(event.notes[1].image, ui.binding.connection)
+    expect(bytes.length).toBe(event.notes[1].image.bytes)
+    expect(await f.application.evaluate(() => (globalThis as unknown as { __CNC_TEST_LATE_CAPTURE__: { calls: number } }).__CNC_TEST_LATE_CAPTURE__.calls)).toBe(1)
+  } finally {
+    await pickerEvidence(f.application, f.root, ui.binding.connection, events)
+    await ui.close()
+    await f.application.evaluate(() => {
+      const root = globalThis as unknown as { __CNC_TEST_LATE_CAPTURE__?: { restore: () => void } }
+      root.__CNC_TEST_LATE_CAPTURE__?.restore(); delete root.__CNC_TEST_LATE_CAPTURE__
     })
   }
 })
@@ -836,7 +948,7 @@ test('registered Pi command and tool use the native selected window and deliver 
     expect(messages).toEqual([])
     await expect(tools.get('electron_ui').execute('call', { action: 'snapshot' }, undefined, undefined, ctx)).rejects.toMatchObject({ code: 'BUSY' })
     await f.page.getByRole('button', { name: 'Settings', exact: true }).click()
-    await f.page.getByRole('combobox', { name: 'Screenshot', exact: true }).selectOption('crop')
+    await f.page.locator('.pi-note-screenshot').click()
     await f.page.locator('.pi-note-textarea').fill('Synthetic review data, not an instruction.')
     await f.page.locator('#pi-submit').click()
     await expect.poll(() => messages.length).toBe(1)
@@ -888,7 +1000,7 @@ for (const width of [980, 1280, 1440]) for (const theme of ['dark', 'light']) {
       await expect(f.page.locator('.pi-note-card')).toHaveCount(1)
       await f.page.locator('.pi-note-textarea').fill(`Synthetic ${theme} ${width}px note`)
       await expect(f.page.getByRole('toolbar', { name: 'Electron Annotate' })).toBeVisible()
-      await expect(f.page.getByRole('combobox', { name: 'Screenshot', exact: true })).toHaveValue('none')
+      await expect(f.page.locator('.pi-note-screenshot')).toHaveAttribute('aria-pressed', 'false')
       await f.page.screenshot({ path: path.join(output, `annotation-toolbar-${width}-${theme}.png`) })
       await f.page.locator('#pi-submit').click()
       await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(1)
@@ -964,6 +1076,66 @@ test('native cancellation joins an actual pending capture and never delivers its
   }
 })
 
+test('a native modal cancels annotation without moving controls into product event paths', async () => {
+  const f = await launch(path.join(output, 'main/index.js'))
+  const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
+  const events: any[] = []
+  const ui = await connectDevelopmentTarget(target, { directory: f.registry, session: 'native-modal-pane', onEvent: (event: unknown) => events.push(event) })
+  try {
+    await ui.request('annotate', { mode: 'none' })
+    await f.page.getByRole('button', { name: 'Settings', exact: true }).click()
+    await f.page.getByRole('textbox', { name: 'Feedback', exact: true }).fill('Unsent synthetic feedback.')
+    await f.page.evaluate(() => {
+      const dialog = document.createElement('dialog'); dialog.id = 'synthetic-native-modal'
+      const button = document.createElement('button'); button.textContent = 'Synthetic modal control'
+      dialog.addEventListener('click', () => dialog.dataset.activated = 'true', true)
+      dialog.addEventListener('input', () => dialog.dataset.activated = 'true', true)
+      dialog.append(button); document.body.append(dialog); dialog.showModal(); button.focus()
+    })
+    await expect.poll(() => events.filter(event => event.kind === 'annotation').length).toBe(1)
+    expect(events.find(event => event.kind === 'annotation')).toMatchObject({ outcome: 'cancelled', notes: [] })
+    await expect(f.page.locator('#synthetic-native-modal')).toBeVisible()
+    await expect(f.page.locator('#synthetic-native-modal')).not.toHaveAttribute('data-activated')
+    await expect(f.page.getByRole('button', { name: 'Synthetic modal control', exact: true })).toBeFocused()
+    await expect(f.page.locator('[popover],#pi-panel,.pi-note-card')).toHaveCount(0)
+    expect((await ui.request('status')).value).toEqual({ state: 'connected-idle' })
+    await expect(ui.request('annotate', { mode: 'none' })).rejects.toThrow()
+    await expect(f.page.locator('[popover],#pi-panel,.pi-note-card')).toHaveCount(0)
+    await f.page.locator('#synthetic-native-modal').evaluate(node => (node as HTMLDialogElement).close())
+    await ui.request('annotate', { mode: 'none' })
+    await expect(f.page.getByRole('toolbar', { name: 'Electron Annotate' })).toBeVisible()
+  } finally { await ui.close() }
+})
+
+test('floating dock drag captures native pointer input and releases it for selection', async () => {
+  const f = await launch(path.join(output, 'main/index.js'))
+  const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
+  const ui = await connectDevelopmentTarget(target, { directory: f.registry, session: 'dock-drag-pane' })
+  const settings = f.page.getByRole('button', { name: 'Settings', exact: true })
+  await settings.evaluate(node => { node.setAttribute('data-product-activations', '0'); node.addEventListener('click', () => node.setAttribute('data-product-activations', '1')) })
+  try {
+    await ui.request('annotate', { mode: 'none' })
+    const dock = f.page.locator('#pi-panel'), before = (await dock.boundingBox())!
+    await f.page.mouse.move(before.x + 3, before.y + 3)
+    await f.page.mouse.down()
+    await f.page.mouse.move(before.x - 197, before.y - 297, { steps: 6 })
+    await f.page.mouse.up()
+    const after = (await dock.boundingBox())!
+    expect(after.x).toBeCloseTo(before.x - 200, 0)
+    expect(after.y).toBeCloseTo(before.y - 300, 0)
+    await expect(dock).not.toHaveClass(/pi-cnc-dragging/)
+    await expect(f.page.locator('.pi-note-card')).toHaveCount(0)
+    await settings.click()
+    await expect(f.page.locator('.pi-note-card')).toHaveCount(1)
+    await expect(settings).toHaveAttribute('data-product-activations', '0')
+    await expect(f.page.getByRole('dialog')).toHaveCount(0)
+    await f.page.getByRole('button', { name: 'Cancel annotation', exact: true }).click()
+    await expect(dock).toHaveCount(0)
+    await ui.request('annotate', { mode: 'none' })
+    expect((await dock.boundingBox())!.y).toBeCloseTo(before.y, 0)
+  } finally { await f.page.mouse.up(); await ui.close() }
+})
+
 test('owned picker note drag crosses its card boundary without product input or a stuck drag state', async () => {
   const f = await launch(path.join(output, 'main/index.js'))
   const target = (await discoverDevelopmentTargets({ directory: f.registry }))[0]
@@ -1005,7 +1177,7 @@ test('approved visible walkthrough uses a real offline Pi source session and ope
     expect(sdk.observation.calls).toBe(0)
     await expect(sdk.run('snapshot')).rejects.toThrow('BUSY')
     await f.page.getByRole('button', { name: 'Settings', exact: true }).click()
-    await f.page.getByRole('combobox', { name: 'Screenshot', exact: true }).selectOption('crop')
+    await f.page.locator('.pi-note-screenshot').click()
     await f.page.locator('.pi-note-textarea').fill('Synthetic visible crop review. No source changes.')
     const cropResponse = sdk.observation.calls + 1
     sdk.queueText('Synthetic image annotation received. No source changes.')

@@ -1,5 +1,5 @@
-/* OpenChamber application tokens. Scope overrides to picker-owned elements only. */
-:is(#pi-panel, .pi-note-card, #pi-highlight, #pi-tooltip, #pi-markers, .pi-connectors) {
+/* Canonical OpenChamber values, applied only to picker-owned overlays. */
+:is(#pi-panel,.pi-note-card,#pi-highlight,#pi-tooltip,#pi-markers,.pi-connectors) {
   --pi-bg-body: var(--surface-background);
   --pi-bg-card: var(--surface-elevated);
   --pi-bg-elevated: var(--surface-subtle);
@@ -8,13 +8,13 @@
   --pi-fg: var(--surface-foreground);
   --pi-fg-muted: var(--surface-muted-foreground);
   --pi-fg-dim: var(--surface-muted-foreground);
-  --pi-accent: var(--status-info-text);
-  --pi-accent-hover: var(--status-info-text);
-  --pi-accent-muted: var(--status-info-background);
+  --pi-accent: var(--primary-text);
+  --pi-accent-hover: var(--primary-hover);
+  --pi-accent-muted: var(--interactive-selection);
   --pi-border: var(--interactive-border);
   --pi-border-muted: var(--interactive-border);
   --pi-border-focus: var(--interactive-border-hover);
-  --pi-success: var(--status-info-text);
+  --pi-success: var(--status-success-text);
   --pi-error: var(--status-error-text);
   --pi-focus-ring: var(--interactive-focus-ring);
   --pi-shadow: var(--surface-overlay);
@@ -22,75 +22,124 @@
   --pi-font-mono: var(--font-mono);
   --pi-radius: var(--radius-md);
 }
-#pi-panel, #pi-panel.pi-panel-bottom {
-  inset: auto auto 16px 50%;
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  transform: translateX(-50%);
-  padding: 6px 8px;
-  border: 1px solid var(--interactive-border-hover);
-  border-radius: var(--radius-xl);
-  background: var(--surface-elevated);
-  color: var(--surface-foreground);
-  box-shadow: 0 8px 20px var(--surface-overlay);
-  font: var(--text-ui-label)/1.45 var(--font-sans);
+#pi-panel,#pi-panel.pi-panel-bottom {
+  inset: auto auto 16px 50%; width: max-content; max-width: calc(100vw - 24px);
+  padding: 0; transform: translateX(-50%); border: 0; background: transparent;
+  box-shadow: none; overflow: visible; color: var(--surface-foreground); font: var(--text-ui-label)/1.45 var(--font-sans);
 }
-#pi-panel .pi-header, #pi-panel .pi-panel-body { display: none; }
-#pi-panel .pi-cnc-toolbar { display: flex; align-items: center; flex-wrap: wrap; justify-content: center; gap: 8px; }
-#pi-panel .pi-cnc-brand { display: flex; gap: 8px; align-items: center; font-size: var(--text-ui-header); white-space: nowrap; }
-#pi-panel svg, .pi-note-card svg { width: 16px; height: 16px; fill: currentColor; pointer-events: none; flex: none; }
-#pi-panel .pi-cnc-brand svg { color: var(--primary-text); }
-#pi-panel button, .pi-note-card button {
+:is(#pi-panel,.pi-notes-container,#pi-markers,#pi-highlight,#pi-tooltip)[popover] { margin: 0; }
+:is(.pi-notes-container,#pi-markers)[popover] { border: 0; padding: 0; background: transparent; overflow: visible; }
+#pi-highlight[popover] { padding: 0; }
+:is(#pi-panel,.pi-notes-container,#pi-markers,#pi-highlight,#pi-tooltip)[popover]::backdrop { background: transparent; pointer-events: none; }
+#pi-panel .pi-header,#pi-panel .pi-panel-body { display: none; }
+#pi-panel .pi-cnc-toolbar { display: flex; align-items: center; gap: 9px; cursor: grab; touch-action: none; user-select: none; }
+#pi-panel.pi-cnc-dragging,#pi-panel.pi-cnc-dragging .pi-cnc-toolbar { cursor: grabbing; }
+#pi-panel .pi-cnc-tools {
+  display: flex; align-items: center; gap: 6px; padding: 8px;
+  border-radius: var(--radius-full); border: 1px solid var(--interactive-border);
+  background: var(--surface-elevated); box-shadow: 0 8px 25px var(--surface-overlay);
+}
+#pi-panel svg,.pi-note-card svg { display: block; width: 18px; height: 18px; margin: 0; fill: currentColor; pointer-events: none; flex: none; }
+#pi-panel button,.pi-note-card button {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  height: 28px; min-width: 28px; padding: 4px; border: 1px solid transparent;
-  border-radius: var(--radius-md); background: transparent; color: var(--surface-muted-foreground);
+  height: 28px; min-width: 28px; padding: 4px; border: 0; border-radius: var(--radius-md);
+  color: var(--surface-muted-foreground); background: transparent;
   font: var(--text-ui-label)/1.45 var(--font-sans); cursor: default; opacity: 1;
 }
-#pi-panel button:hover, .pi-note-card button:hover { background: var(--interactive-hover); color: var(--surface-foreground); }
-#pi-panel button.active { background: var(--interactive-selection); color: var(--interactive-selection-foreground); }
-#pi-panel button:disabled, .pi-note-card button:disabled { opacity: .45; }
-#pi-panel button:focus-visible, .pi-note-card :is(button, select, textarea):focus-visible {
+#pi-panel button { width: 28px; min-height: 28px; padding: 0; margin: 0; gap: 0; flex: none; border-radius: var(--radius-full); }
+#pi-panel button:hover,.pi-note-card button:hover { color: var(--surface-foreground); background: var(--interactive-hover); }
+#pi-panel button:disabled,.pi-note-card button:disabled { opacity: .35; }
+#pi-panel button[aria-pressed="true"].pi-cnc-select,
+#pi-panel button[aria-pressed="false"].pi-cnc-visibility,
+.pi-note-card .pi-cnc-details-toggle[aria-expanded="true"] {
+  color: var(--primary-text); background: color-mix(in srgb,var(--primary-base) 12%,var(--surface-elevated));
+}
+#pi-panel button:focus-visible,.pi-note-card :is(button,textarea):focus-visible {
   outline: 2px solid var(--interactive-focus); outline-offset: 2px;
 }
 #pi-panel #pi-submit {
-  height: 32px; padding: 4px 10px; color: var(--primary-text);
-  background: color-mix(in srgb, var(--primary-base) 12%, var(--surface-background));
+  height: 44px; width: 44px; min-width: 44px; padding: 10px; border-radius: var(--radius-full);
+  color: var(--primary-foreground); background: var(--primary-base); box-shadow: 0 8px 25px var(--surface-overlay);
 }
-#pi-panel #pi-submit:hover { background: color-mix(in srgb, var(--primary-base) 20%, var(--surface-background)); }
-#pi-panel #pi-count { min-width: 58px; color: var(--surface-muted-foreground); font: var(--text-meta)/1.45 var(--font-sans); }
+#pi-panel #pi-submit:hover { background: var(--primary-hover); }
+#pi-panel #pi-submit:disabled { opacity: 1; background: var(--surface-elevated); color: var(--surface-muted-foreground); border: 1px solid var(--interactive-border); }
+#pi-panel #pi-submit:disabled svg { opacity: .5; }
+#pi-panel .pi-cnc-undo { margin-left: 4px; }
+#pi-panel .pi-cnc-count { display: inline-flex; align-items: center; gap: 5px; padding: 0 4px; color: var(--surface-muted-foreground); }
+#pi-panel #pi-count { min-width: 0; font: var(--text-micro)/1.45 var(--font-sans); font-variant-numeric: tabular-nums; }
+#pi-panel .pi-cnc-status {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: calc(100vw - 24px); white-space: normal;
+  color: var(--surface-foreground); background: var(--surface-elevated); border-radius: var(--radius-md);
+  font-size: var(--text-micro); pointer-events: none;
+}
+#pi-panel .pi-cnc-status:not(:empty) { padding: 8px 12px; }
 .pi-note-card {
-  width: 332px; max-width: calc(100vw - 16px); border-radius: var(--radius-xl);
-  background: var(--surface-elevated); color: var(--surface-foreground);
-  border: 1px solid var(--interactive-border-hover); box-shadow: 0 12px 32px var(--surface-overlay);
+  --pi-card-surface: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 6%,var(--surface-elevated));
+  display: flex; flex-direction: column; width: 437px; max-width: calc(100vw - 16px);
+  border-radius: var(--radius-xl); background: var(--pi-card-surface); color: var(--surface-foreground);
+  border: 1px solid var(--pi-note-accent,var(--interactive-border)); box-shadow: 0 12px 32px var(--surface-overlay);
   font: var(--text-ui-label)/1.45 var(--font-sans);
 }
-.pi-note-card .pi-note-header { padding: 10px 12px; gap: 4px; background: transparent; border-bottom: 1px solid var(--interactive-border); }
-.pi-note-card .pi-note-badge { width: 20px; height: 20px; border-radius: var(--radius-sm); background: var(--interactive-selection); color: var(--interactive-selection-foreground); font: var(--text-micro)/1.45 var(--font-sans); }
-.pi-note-card .pi-note-selector { color: var(--surface-foreground); font: var(--text-ui-label)/1.45 var(--font-sans); }
-.pi-note-card .pi-note-expand svg { transform: rotate(180deg); }
-.pi-note-card .pi-note-screenshot.active { color: var(--primary-text); background: color-mix(in srgb, var(--primary-base) 12%, var(--surface-background)); }
-.pi-note-card .pi-note-close:hover { color: var(--status-error-text); }
-.pi-note-card .pi-note-body { padding: 12px; }
-.pi-note-card .pi-cnc-feedback-label { display: block; color: var(--surface-muted-foreground); font: var(--text-meta)/1.45 var(--font-sans); }
-.pi-note-card .pi-note-textarea {
-  display: block; width: 100%; min-height: 86px; margin-top: 6px; padding: 10px;
-  background: var(--surface-background); color: var(--surface-foreground);
-  border: 1px solid var(--interactive-border-hover); border-radius: var(--radius-md);
-  font: var(--text-ui-label)/1.45 var(--font-sans); caret-color: var(--interactive-cursor);
+.pi-note-card:hover { border-color: var(--pi-note-accent,var(--interactive-border-hover)); }
+.pi-note-card :is(button,textarea):focus-visible { outline-color: var(--pi-note-accent,var(--interactive-focus)); }
+.pi-note-card .pi-note-header { flex-shrink: 0; padding: 12px 14px; gap: 9px; background: transparent; border: 0; }
+.pi-note-card .pi-note-badge {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: var(--radius-full);
+  background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 12%,var(--surface-elevated)); color: var(--pi-note-accent,var(--primary-text));
+  font: var(--text-micro)/1.45 var(--font-sans);
 }
-.pi-note-card .pi-note-textarea::placeholder { color: var(--surface-muted-foreground); }
-.pi-note-card .pi-cnc-capture { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 0 12px 12px; font-size: var(--text-meta); }
-.pi-note-card select { height: 32px; max-width: 60%; padding: 4px 8px; color: var(--surface-foreground); background: var(--surface-background); border: 1px solid var(--interactive-border); border-radius: var(--radius-md); font: var(--text-meta)/1.45 var(--font-sans); }
-.pi-note-card .pi-cnc-review { padding: 10px 12px; border-top: 1px solid var(--interactive-border); color: var(--surface-muted-foreground); font-size: var(--text-micro); }
+.pi-note-card .pi-note-selector { color: var(--surface-foreground); font: var(--text-ui-label)/1.45 var(--font-sans); }
+.pi-note-card .pi-note-body { display: flex; flex-direction: column; min-height: 0; padding: 0 16px; }
+.pi-note-card .pi-note-textarea {
+  display: block; box-sizing: border-box; width: 100%; height: 159px; min-height: 48px; margin: 0; padding: 12px;
+  background: transparent; color: var(--surface-foreground); border: 0; border-radius: var(--radius-md); box-shadow: none;
+  font: var(--text-ui-label)/1.65 var(--font-sans); caret-color: var(--interactive-cursor);
+}
+.pi-note-card .pi-note-textarea:focus { border: 0; background: transparent; box-shadow: none; }
+.pi-note-card .pi-note-textarea::placeholder { color: var(--surface-muted-foreground); font-style: italic; opacity: 1; }
+.pi-note-card .pi-cnc-footer { display: flex; flex-shrink: 0; align-items: center; gap: 8px; padding: 12px 16px; }
+.pi-note-card .pi-note-screenshot { opacity: 1; width: auto; gap: 6px; font-size: var(--text-micro); white-space: nowrap; }
+.pi-note-card .pi-note-screenshot.active { color: var(--primary-text); background: transparent; }
+.pi-note-card .pi-cnc-destination { margin-left: auto; color: var(--surface-muted-foreground); font-size: var(--text-micro); white-space: nowrap; }
+.pi-note-card .pi-cnc-details-toggle { margin-left: auto; flex-shrink: 0; transform: none; }
+.pi-note-card .pi-note-close { flex-shrink: 0; }
+.pi-note-card .pi-note-close:hover { color: var(--status-error-text); }
+.pi-note-card .pi-cnc-details {
+  flex-shrink: 1; min-height: 0; max-height: 190px; overflow: auto; margin-top: 12px; padding: 12px;
+  border-radius: var(--radius-md); background: var(--surface-background);
+}
+.pi-note-card .pi-cnc-details[hidden] { display: none; }
+.pi-note-card .pi-cnc-details dl { display: grid; grid-template-columns: 62px minmax(0,1fr); gap: 10px 12px; margin: 0; }
+.pi-note-card .pi-cnc-details dt { color: var(--surface-muted-foreground); font-size: var(--text-micro); }
+.pi-note-card .pi-cnc-details dd { margin: 0; overflow-wrap: anywhere; color: var(--surface-foreground); font: var(--text-micro)/1.5 var(--font-mono); }
+.pi-note-card .pi-cnc-hierarchy { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
+.pi-note-card .pi-note-expand svg { transform: rotate(180deg); }
+.pi-note-card.pi-cnc-minimized .pi-note-body,.pi-note-card.pi-cnc-minimized .pi-cnc-footer { display: none; }
+.pi-note-card.pi-cnc-minimized .pi-note-header { padding-top: 8px; padding-bottom: 8px; }
 .pi-note-card ::selection { background: var(--interactive-selection); color: var(--interactive-selection-foreground); }
+.pi-notes-container.pi-cnc-hidden,#pi-markers.pi-cnc-hidden,#pi-highlight.pi-cnc-hidden,#pi-tooltip.pi-cnc-hidden { visibility: hidden !important; }
 #pi-markers .pi-marker-badge { width: 22px; height: 22px; font: var(--text-micro)/1.45 var(--font-sans); }
+#pi-markers .pi-marker-outline { border-color: var(--pi-note-accent,var(--primary-text)); background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 7%,transparent); }
+#pi-markers .pi-marker-badge { background: var(--surface-elevated); color: var(--pi-note-accent,var(--primary-text)); border: 1px solid var(--pi-note-accent,var(--primary-text)); }
 #pi-highlight { transition: none; }
 body:has(.pi-note-card:focus-within) #pi-tooltip { visibility: hidden; }
 svg.pi-connectors { display: none; }
-@media (pointer: coarse) {
-  #pi-panel button, .pi-note-card button { min-width: 44px; height: 44px; }
-  .pi-note-card .pi-note-textarea { font-size: 16px; line-height: 1.45; }
+@media (max-width:520px) {
+  .pi-note-card .pi-cnc-destination { display: none; }
+  #pi-panel .pi-cnc-tools { gap: 2px; padding: 6px; }
+  #pi-panel .pi-cnc-toolbar { gap: 6px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  #pi-panel *, .pi-note-card *, #pi-markers * { transition: none; }
+@media (pointer:coarse) {
+  #pi-panel button,.pi-note-card button { min-width: 44px; height: 44px; }
+  .pi-note-card .pi-note-textarea { font-size: 16px; }
+}
+@media (pointer:coarse) and (max-width:520px) {
+  #pi-panel .pi-cnc-toolbar { flex-direction: column-reverse; align-items: stretch; }
+  #pi-panel .pi-cnc-tools { display: grid; grid-template-columns: repeat(5,44px); gap: 0; border-radius: var(--radius-xl); }
+  #pi-panel .pi-cnc-count { display: none; }
+  #pi-panel #pi-submit { align-self: flex-end; }
+}
+@media (prefers-reduced-motion:reduce) {
+  #pi-panel *,.pi-note-card *,#pi-markers * { transition: none; }
 }

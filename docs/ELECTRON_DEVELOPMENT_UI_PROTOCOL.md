@@ -100,7 +100,7 @@ An annotation event contains `version: 1`, `kind: "annotation"`, `binding`, `req
 
 A submitted event contains 1 to 10 notes. A cancelled event has no notes. Each note contains `comment`, `selector`, `tag`, `name`, and `rect`. A note can contain verified `image` metadata only in `crop` mode.
 
-Crop mode permits notes without images when the owner disables the camera. A `none` event cannot contain image metadata. The runtime must separately prove zero screenshot calls on that route.
+Crop mode permits any mix of notes with and without image metadata. The picker selects a crop for each note separately. Each new note uses the initial picker choice, even after earlier notes change the shared mode. It captures no image when every note omits a crop. A `none` event cannot contain image metadata. The runtime must separately prove zero screenshot calls in `none` mode.
 
 A revocation event contains `version: 1`, `kind: "revoked"`, `binding`, and `reason`. A cleanup event contains exactly `version: 1`, `kind: "cleanup-complete"`, and `binding`. All event kinds require the exact connection binding. The backend sends cleanup completion only after actual owned work and cleanup settle. Revocation alone proves no cleanup. Neither event authorizes a replacement target or automatic reconnect.
 
@@ -200,7 +200,7 @@ Collector shutdown removes its listener, unfinished request metadata, and buffer
 
 ## Attached annotation runtime
 
-The [picker controller](../scripts/electron-development-ui/picker.cjs) reuses the annotation request lane and the unchanged pinned Pi Annotate asset. The command returns after actual picker preparation. A separate source-session listener retains Submit or Cancel delivery after that return.
+The [picker controller](../scripts/electron-development-ui/picker.cjs) reuses the annotation request lane and hash-verifies the pinned Pi Annotate asset. A fixed local compatibility hook adds annotation-state snapshot/restore and selection pause inside the picker’s lexical scope; it exposes no new wire method, product input, capture, or model scripting capability. History is request-bound and rejects detached, changed, ambiguous or replaced original nodes before restoring any state. The dependency file remains unchanged. The command returns after actual picker preparation. A separate source-session listener retains Submit or Cancel delivery after that return.
 
 The fixed isolated-world adapter captures the asset's capture-phase selection handlers, not its bubble-phase drag handlers. The developer preload consumes product input during annotation. Own picker controls retain normal input. Space and Enter select the focused product element without its normal action.
 

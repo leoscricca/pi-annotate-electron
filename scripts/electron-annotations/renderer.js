@@ -174,7 +174,10 @@
     }
   }, true)
   function blockProductMouseMove(event) {
-    if (current && !own(event.target)) event.stopPropagation()
+    if (current && !own(event.target)) {
+      window.__CNC_ANNOTATION_PICKER_STATE__?.moveDrag({ x: event.clientX, y: event.clientY })
+      event.stopPropagation()
+    }
   }
   // Missing controls cannot establish image intent and therefore cause refusal.
   function imageChoices() {
@@ -259,7 +262,7 @@
         for (const element of document.querySelectorAll('[id^="pi-"], .pi-notes-container, svg.pi-connectors')) overlayRoots.add(element)
         restrictControls()
         document.getElementById(configuration.mode === 'crop' ? 'pi-ss-each' : 'pi-ss-none').click()
-        window.__CNC_ANNOTATION_PRESENTATION__.start()
+        window.__CNC_ANNOTATION_PRESENTATION__.start({ defaultScreenshot: configuration.mode === 'crop' })
         current.activeBodyStyle = new Map([...document.body.style].map(name => [name, document.body.style.getPropertyValue(name)]))
         current.observer.observe(document.body, { subtree: true, attributes: true, childList: true, characterData: true })
         return { active: true }

@@ -71,7 +71,7 @@ In the source Pi process, use:
 
 Select the intended verified window with Pi's native chooser. A successful connection activates the picker. No image is the default. Picker readiness and note delivery are separate results.
 
-Use the existing picker to select an element and submit a note. Comments and element facts remain untrusted review input. They grant no source-edit or process authority.
+Use the icon toolbar to select elements and the separate arrow button to submit notes. The eye hides or shows annotations; undo/redo restores added or deleted notes. A dash minimizes a note, the bin deletes it, and a numbered marker reopens it. The footer code icon expands element details without moving the toggle. Add screenshot opts an individual note into an element crop. Comments and element facts remain untrusted review input. They grant no source-edit or process authority.
 
 ```text
 /annotate-electron status
@@ -84,7 +84,7 @@ The `electron_ui` tool supplies bounded snapshots, requested screenshots, input,
 
 ## Design and evidence
 
-The overlay owns its [canonical token scope](design/DESIGN.md). It does not borrow the target application's palette or modify target styles. Required token exports, seven icons, and licenses accompany the package.
+The overlay owns its [canonical token scope](design/DESIGN.md). It does not borrow the target application's palette or modify target styles. Required token exports, licensed functional icons, and their notices accompany the package.
 
 Read the [migration contract](docs/MIGRATION.md), [wire contract](docs/ELECTRON_DEVELOPMENT_UI_PROTOCOL.md), and [verification record](docs/VERIFICATION.md). Historical host results do not validate these package bytes. Historical plans remain in `docs/history`; they do not authorize new work.
 

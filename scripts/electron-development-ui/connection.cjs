@@ -84,14 +84,15 @@ function frames(socket, limit, receive, closed) {
   return pipe
 }
 
-async function createDevelopmentBridge({ directory, targets, openTarget, handshakeMs = 3000, requestMs = 10_000, cleanupMs = 5000 }) {
+async function createDevelopmentBridge({ directory, targets, openTarget, label = LABEL, handshakeMs = 3000, requestMs = 10_000, cleanupMs = 5000 }) {
+  if (typeof label !== 'string' || !label || label.length > 128 || /[\x00-\x1f\x7f]/.test(label)) throw failure('PROTOCOL_REFUSED')
   const registration = await createRegistration(directory)
   const leases = new Map()
   const sockets = new Set()
   let stopped = false
   let closePromise
   const metadata = () => targets().map(value => ({ kind: 'attached-development', instance: registration.instance,
-    window: value.window, generation: value.generation, label: LABEL, capabilities: value.capabilities }))
+    window: value.window, generation: value.generation, label, capabilities: value.capabilities }))
   const current = lease => !stopped && !lease.revoked && metadata().some(value => value.window === lease.binding.window && value.generation === lease.binding.generation)
   function retire(lease, reason, { waitForSettlement = false } = {}) {
     if (!lease.cleanup) {

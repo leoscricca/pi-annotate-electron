@@ -151,7 +151,7 @@ export function installDevelopmentAdapter(pi, { schema, discover = discoverDevel
         return start(ctx, owner, existing, epoch, mode, signal)
       }
       if ([...state.slots.values()].some(slot => slot.blocked || slot.closing)) fail('DEV_UI_CLEANUP_BLOCKED')
-      const slot = { client: null, starting: null, closing: null, blocked: false, revision: 0, jobs: new Set(), delivered: new Set(), request: null, needsSnapshot: false }
+      const slot = { client: null, starting: null, closing: null, delivery: null, blocked: false, revision: 0, jobs: new Set(), delivered: new Set(), request: null, needsSnapshot: false }
       state.slots.set(owner, slot)
       try {
         const found = (await discover()).filter(target => target.kind === 'attached-development' && target.capabilities.includes('annotation'))
@@ -205,7 +205,7 @@ export function installDevelopmentAdapter(pi, { schema, discover = discoverDevel
       slot.cancelWork = (async () => {
         try {
           if (active) { await track(slot, slot.client.request('cancel', { annotation: request })); slot.delivered.add(request) }
-          await Promise.allSettled([...slot.jobs])
+          await Promise.allSettled(slot.jobs)
           if (!current(ctx, owner, slot, epoch) || !slot.client.active) fail('DEV_UI_TARGET_RETIRED')
           return text(active ? 'Picker cancelled after cleanup. The app connection remains open.'
             : 'No active picker. Pending annotation feedback is revoked. The app connection remains open.')

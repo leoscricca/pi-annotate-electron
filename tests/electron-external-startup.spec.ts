@@ -7,17 +7,21 @@ import path from 'node:path'
 import vm from 'node:vm'
 
 const require = createRequire(import.meta.url)
+const nativeModules = new Map<string, unknown>([['node:fs', require('node:fs')], ['node:path', path], ['node:url', require('node:url')]])
 function deferred<T>() {
   let resolve!: (value: T) => void
   let reject!: (error: Error) => void
   const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no })
   return { promise, resolve, reject }
 }
-function fixture() {
+function fixture(early = false) {
   const ready = deferred<void>(), acquire = deferred<any>(), cleanup = deferred<void>()
   class App extends EventEmitter {
     isPackaged = false
     quits = 0
+    exits: number[] = []
+    isReady() { return false }
+    exit(code = 0) { this.exits.push(code) }
     whenReady() { return ready.promise }
     setName() {}
     setAppPath() {}
@@ -30,17 +34,19 @@ function fixture() {
   const exported = { exports: {} as { startExternalApp: (config: unknown) => { ready: Promise<void> } } }
   const file = path.resolve('scripts/electron-development-ui/external-bootstrap.cjs')
   vm.runInNewContext(readFileSync(file, 'utf8'), {
-    module: exported, __dirname: path.dirname(file), console: { error: (value: string) => logs.push(value) },
+    module: exported, __dirname: path.dirname(file), process: { env: {} }, console: { error: (value: string) => logs.push(value) },
     require: (name: string) => name === 'electron' ? { app, ipcMain: {}, session: {} }
-      : name === './host.cjs' ? { installDevelopmentUi: () => { installations++; return acquire.promise } } : require(name),
+      : name === './host.cjs' ? { installDevelopmentUi: () => { installations++; return acquire.promise },
+        prepareDevelopmentUi: () => { installations++; return acquire.promise } } : nativeModules.get(name),
   }, { filename: file })
   const owned = exported.exports.startExternalApp({ name: 'Synthetic launch', appRoot: '/synthetic-app',
-    entry: '/synthetic-app/main.mjs', renderer: '/synthetic-app/index.html' })
+    entry: '/synthetic-app/main.mjs', renderer: '/synthetic-app/index.html', ...(early ? { adapter: 'openchamber' } : {}) })
   // Observe rejection immediately, before a controlled gate can reject it.
   void owned.ready.catch(() => {})
   let prevented = 0
   const quit = () => app.emit('before-quit', { preventDefault() { prevented++ } })
-  return { app, ready, acquire, cleanup, host, owned, quit, logs,
+  const willQuit = () => app.emit('will-quit', { preventDefault() { prevented++ } })
+  return { app, ready, acquire, cleanup, host, owned, quit, willQuit, logs,
     counts: () => ({ installations, closes, prevented, quits: app.quits }) }
 }
 
@@ -66,6 +72,46 @@ test('quit during bridge acquisition joins actual cleanup before normal quit', a
   expect(f.app.listenerCount('browser-window-created')).toBe(0)
   f.cleanup.resolve()
   await expect.poll(() => f.counts().quits).toBe(1)
+})
+
+for (const rejected of [false, true]) test(`OpenChamber native exit joins pre-ready acquisition and ${rejected ? 'blocks rejected' : 'settles actual'} cleanup`, async () => {
+  const f = fixture(true)
+  expect(f.counts().installations).toBe(1)
+  f.app.exit(7)
+  f.app.exit(9)
+  f.acquire.resolve(f.host)
+  await rejects(f.owned.ready, { code: 'EXTERNAL_STARTUP_CANCELLED' })
+  await expect.poll(() => f.counts().closes).toBe(1)
+  expect(f.app.exits).toEqual([])
+  if (rejected) {
+    f.cleanup.reject(new Error('Owned cleanup refusal'))
+    await expect.poll(() => f.logs).toContain('External annotation cleanup remains unconfirmed. Normal quit stays blocked.')
+    expect(f.app.exits).toEqual([])
+  } else {
+    f.cleanup.resolve()
+    await expect.poll(() => f.app.exits).toEqual([7])
+  }
+  expect(f.counts().quits).toBe(0)
+})
+
+for (const rejected of [false, true]) test(`unowned post-ready quit ${rejected ? 'blocks rejected' : 'joins actual'} bridge cleanup`, async () => {
+  const f = fixture(true)
+  f.app.isReady = () => true
+  f.willQuit()
+  expect(f.counts().prevented).toBe(1)
+  f.acquire.resolve(f.host)
+  await rejects(f.owned.ready, { code: 'EXTERNAL_STARTUP_CANCELLED' })
+  await expect.poll(() => f.counts().closes).toBe(1)
+  expect(f.counts().quits).toBe(0)
+  if (rejected) {
+    f.cleanup.reject(new Error('Unowned quit cleanup refusal'))
+    await expect.poll(() => f.logs).toContain('External annotation cleanup remains unconfirmed. Normal quit stays blocked.')
+    expect(f.counts().quits).toBe(0)
+  } else {
+    f.cleanup.resolve()
+    await expect.poll(() => f.counts().quits).toBe(1)
+  }
+  expect(f.app.exits).toEqual([])
 })
 
 test('unconfirmed startup acquisition cannot turn into a clean quit', async () => {

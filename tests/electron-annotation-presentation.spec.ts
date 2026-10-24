@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 import { createRequire } from 'node:module'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 const require = createRequire(import.meta.url)
@@ -25,7 +25,8 @@ async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appC
     }
     ;(window as any).__CNC_DEV_UI__ = {
       guard(active: boolean) { if (active) document.addEventListener('click', route, true); else document.removeEventListener('click', route, true) },
-      onHover() {}, onWheel() {}, onSelect(callback: typeof select) { select = callback }, onEscape() {}, inputState() { return {} },
+      onHover(callback: (point: { x: number; y: number }) => void) { (window as any).fixtureHover = callback },
+      onWheel() {}, onSelect(callback: typeof select) { select = callback }, onEscape() {}, inputState() { return {} },
       post(_connection: string, packet: unknown) { return (window as any).annotationPost(packet) },
     }
   })
@@ -43,6 +44,113 @@ async function start(page: Page, mode: 'none' | 'crop' = 'none', options: { appC
   return { picker, events, before }
 }
 
+
+test('fixed toolbar and footer SVG icons retain their namespace and accessible presentation', async ({ page }) => {
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    const icons = await page.locator('.pi-cnc-toolbar svg, .pi-note-card svg').evaluateAll(nodes => nodes.map(node => ({
+      namespace: node.namespaceURI, viewBox: node.getAttribute('viewBox'), hidden: node.getAttribute('aria-hidden'), paths: node.querySelectorAll('path').length,
+    })))
+    expect(icons.length).toBeGreaterThan(10)
+    for (const icon of icons) {
+      expect(icon.namespace).toBe('http://www.w3.org/2000/svg')
+      expect(icon.viewBox).toBe('0 0 24 24')
+      expect(icon.hidden).toBe('true')
+      expect(icon.paths).toBeGreaterThan(0)
+    }
+    await expect(page.locator('#pi-panel parsererror, .pi-note-card parsererror')).toHaveCount(0)
+    await expect(page.locator('.pi-cnc-count #pi-count')).toHaveText('1')
+    await page.getByRole('button', { name: 'Cancel annotation', exact: true }).click()
+    await expect(page.locator('#pi-panel')).toHaveCount(0)
+    await expect(page.locator('#draft')).toHaveValue('Existing product draft')
+  } finally { await picker.close() }
+})
+
+for (const width of [390, 1280]) test(`element navigation is visible in the footer without a session label at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 900 })
+  const { picker } = await start(page)
+  try {
+    await page.locator('#target').click()
+    const note = page.locator('.pi-note-card'), footer = note.locator('.pi-cnc-footer')
+    await expect(footer.getByRole('button', { name: 'Expand to parent', exact: true })).toBeVisible()
+    await expect(footer.getByRole('button', { name: 'Contract to child', exact: true })).toBeVisible()
+    await expect(note.getByText('Pi session', { exact: true })).toHaveCount(0)
+    await expect(note.getByRole('region', { name: 'Selected element details', includeHidden: true })).toBeHidden()
+    expect(await footer.locator('button').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label'))))
+      .toEqual(['Add screenshot', 'Expand to parent', 'Contract to child', 'Show element details', 'Delete annotation'])
+    const box = (await note.boundingBox())!
+    for (const control of await footer.locator('button').all()) {
+      const bounds = (await control.boundingBox())!
+      expect(bounds.x).toBeGreaterThanOrEqual(box.x)
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(box.x + box.width)
+    }
+  } finally { await picker.close() }
+})
+
+for (const theme of ['dark', 'light'] as const) for (const width of [390, 768, 1440]) {
+  test(`hover and selection highlights remain see-through at ${width}px in ${theme}`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.emulateMedia({ colorScheme: theme })
+    const { picker } = await start(page)
+    const evidence = process.env.CNC_DEV_UI_TEST_EVIDENCE
+    const screenshot = async (phase: string) => {
+      if (!evidence) return
+      await mkdir(evidence, { recursive: true, mode: 0o700 })
+      await writeFile(resolve(evidence, `${theme}-${width}-${phase}.png`), await page.screenshot(), { mode: 0o600 })
+    }
+    try {
+      await page.locator('#target').evaluate(node => {
+        node.style.cssText = 'width:calc(100vw - 180px);max-width:600px;height:260px;background:repeating-linear-gradient(90deg,#fff 0 24px,#111 24px 48px)'
+        const box = node.getBoundingClientRect()
+        ;(window as any).fixtureHover({ x: box.x + box.width / 2, y: box.y + box.height / 2 })
+      })
+      const background = await page.locator('#target').evaluate(node => getComputedStyle(node).backgroundImage)
+      const highlight = page.locator('#pi-highlight')
+      await expect(highlight).toBeVisible()
+      const alpha = (selector: string) => page.locator(selector).evaluate(node => {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1
+        const ctx = canvas.getContext('2d')!
+        ctx.fillStyle = getComputedStyle(node).backgroundColor; ctx.fillRect(0, 0, 1, 1)
+        return ctx.getImageData(0, 0, 1, 1).data[3]!
+      })
+      expect(await alpha('#pi-highlight')).toBeGreaterThan(0)
+      expect(await alpha('#pi-highlight')).toBeLessThanOrEqual(31)
+      expect(await highlight.evaluate(node => getComputedStyle(node).borderTopWidth)).toBe('2px')
+      await screenshot('hover')
+      await page.locator('#target').click()
+      expect(await alpha('.pi-marker-outline')).toBeGreaterThan(0)
+      expect(await alpha('.pi-marker-outline')).toBeLessThanOrEqual(31)
+      expect(await alpha('.pi-note-card')).toBe(255)
+      await screenshot('selected')
+      await picker.close()
+      expect(await page.locator('#target').evaluate(node => getComputedStyle(node).backgroundImage)).toBe(background)
+    } finally { await picker.close() }
+  })
+}
+
+test('footer hierarchy controls keep the draft and image choice while changing the selected element', async ({ page }) => {
+  const { picker, events } = await start(page, 'crop')
+  try {
+    await page.locator('#target').click()
+    const note = page.locator('.pi-note-card'), footer = note.locator('.pi-cnc-footer')
+    await note.getByRole('textbox', { name: 'Feedback', exact: true }).fill('Keep this navigation draft.')
+    await note.getByRole('button', { name: 'Remove screenshot', exact: true }).click()
+    await footer.getByRole('button', { name: 'Expand to parent', exact: true }).click()
+    await footer.getByRole('button', { name: 'Show element details', exact: true }).click()
+    await expect(note.locator('[data-fact="tag"]')).toHaveText('main')
+    await expect(note.getByRole('textbox', { name: 'Feedback', exact: true })).toHaveValue('Keep this navigation draft.')
+    await expect(note.getByRole('button', { name: 'Add screenshot', exact: true })).toHaveAttribute('aria-pressed', 'false')
+    await footer.getByRole('button', { name: 'Contract to child', exact: true }).click()
+    await expect(note.locator('[data-fact="tag"]')).toHaveText('button')
+    await expect(note.locator('[data-fact="selector"]')).toContainText('#target')
+    await expect(note.getByRole('textbox', { name: 'Feedback', exact: true })).toHaveValue('Keep this navigation draft.')
+    await page.getByRole('button', { name: 'Send annotations', exact: true }).click()
+    await expect.poll(() => events.length).toBe(1)
+    expect(events[0]).toMatchObject({ outcome: 'submitted', mode: 'none', notes: [{ name: 'Connect Codex', comment: 'Keep this navigation draft.' }] })
+    expect(events[0].notes[0]).not.toHaveProperty('image')
+  } finally { await picker.close() }
+})
 
 test('Catppuccin Mocha controls use brand accents without recoloring the app', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' })

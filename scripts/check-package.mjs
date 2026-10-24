@@ -7,7 +7,11 @@ import ts from 'typescript'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const read = relative => fs.readFile(path.join(root, relative))
-const json = async relative => JSON.parse(await read(relative))
+const json = async relative => {
+  const source = await read(relative)
+  try { return JSON.parse(source.toString('utf8')) }
+  catch (cause) { throw new Error(`Invalid JSON in ${relative}`, { cause }) }
+}
 const sha = value => createHash('sha256').update(value).digest('hex')
 const integrity = await json('design/integrity.json')
 for (const [file, hash] of Object.entries(integrity.files)) assert.equal(sha(await read(file)), hash, `Changed fixed resource: ${file}`)

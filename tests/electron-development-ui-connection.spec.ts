@@ -65,6 +65,13 @@ test.afterEach(async ({}, info) => {
   }
 })
 
+test('invalid host labels refuse before any registry acquisition', async () => {
+  for (const label of ['', 'x'.repeat(129), 'label\ncontrol', 42]) {
+    await expect(createDevelopmentBridge({ label, targets: () => [], openTarget() { throw new Error('Unexpected target') } }))
+      .rejects.toMatchObject({ code: 'PROTOCOL_REFUSED', outcome: 'refused' })
+  }
+})
+
 test('authenticated discovery returns only safe target facts without creating a controller', async () => {
   const f = await fixture()
   expect(await f.discover()).toEqual([{ kind: 'attached-development', instance: expect.any(String), window: 'main', generation: 1,

@@ -145,12 +145,16 @@ Discovery checks at most 32 registration records. Unreachable, invalid, stale, o
 
 `createDevelopmentBridge` accepts trusted Node options, not renderer or model parameters:
 
+- `label` optionally supplies a nonempty display label of at most 128 characters, without control characters. It carries no transport or authentication data.
+
 - `directory` optionally selects an owned private registry for a host or test fixture.
 - `targets()` supplies current window IDs, document generations, and actual supported capabilities. It must not collect page content.
 - `openTarget(binding, emit)` creates the selected window controller only after explicit connection. It can return a promise.
 - A controller supplies `execute(action, params, request)` and `close(reason)`. The latter cancels and joins its owned work without app closure.
 
 The returned bridge has `instance`, `directory`, `revoke(window, reason)`, and idempotent `close()`. Host navigation and session integration must call revocation at their actual lifecycle boundaries. The Node backend alone does not observe an Electron document.
+
+The external OpenChamber adapter uses the same wire contract. It prepares the host before Electron readiness, then registers the isolated preload at readiness before app window creation. It accepts only the fixed local application document in eligible root windows. It adds no model-supplied URL, script, backend method, or public debugging endpoint. The app retains its existing preload and sandbox configuration.
 
 A trusted factory can throw `ConnectionRefusal` only when it proves that resource acquisition did not occur. This private Node brand never comes from wire fields or renderer errors. Unknown factory failures retain their ownership block. A late proven refusal releases ownership only after the factory actually settles.
 

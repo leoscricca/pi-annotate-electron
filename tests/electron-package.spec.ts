@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { mkdtemp, mkdir, readFile, symlink, access } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, writeFile, symlink, access } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -19,6 +19,21 @@ test.beforeAll(async () => {
   // Reproduce npm's hoisted dependency layout with the real pinned dependencies.
   // These links belong only to this private test installation, not package source.
   for (const name of ['electron', 'pi-annotate']) await symlink(path.dirname(require.resolve(name + '/package.json')), path.join(root, 'node_modules', name), 'dir')
+})
+
+test('package checks identify malformed JSON and retain the parse cause', async ({}, testInfo) => {
+  const root = testInfo.outputPath('invalid-package')
+  await mkdir(path.join(root, 'scripts'), { recursive: true, mode: 0o700 })
+  await mkdir(path.join(root, 'design'), { mode: 0o700 })
+  await writeFile(path.join(root, 'scripts/check-package.mjs'), await readFile('scripts/check-package.mjs'), { mode: 0o600 })
+  await writeFile(path.join(root, 'design/integrity.json'), '{invalid', { mode: 0o600 })
+  const result = await run(process.execPath, [path.join(root, 'scripts/check-package.mjs')]).then(
+    () => ({ code: 0, stderr: '' }),
+    (error: Error & { code?: number; stderr?: string }) => ({ code: error.code, stderr: error.stderr ?? '' }),
+  )
+  expect(result.code).toBe(1)
+  expect(result.stderr).toContain('Invalid JSON in design/integrity.json')
+  expect(result.stderr).toContain('SyntaxError')
 })
 
 test('published package exposes a runnable launcher command', async () => {

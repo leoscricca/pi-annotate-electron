@@ -4,7 +4,7 @@ if (process.isMainFrame) {
   let active = false
   let escape = () => {}
   let select = () => {}
-  const own = target => target instanceof Element && !!target.closest('#pi-panel, .pi-note-card')
+  const own = target => target instanceof Element && target.closest('#pi-panel, .pi-note-card') !== null
   window.addEventListener('keydown', event => {
     if (!active) return
     event.stopImmediatePropagation()

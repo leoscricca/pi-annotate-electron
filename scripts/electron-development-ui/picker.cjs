@@ -1,5 +1,4 @@
 const fs = require('node:fs/promises')
-const path = require('node:path')
 const { createHash } = require('node:crypto')
 const { AnnotationRequestLane } = require('../electron-annotations/request.cjs')
 const { dimensions, cropRectangle } = require('../electron-annotations/images.cjs')
@@ -63,8 +62,10 @@ function createPicker({ contents, binding, emit, isCurrent, onRevoked, repositor
     busy() { return lane.status().phase !== 'idle' },
     status() {
       const state = lane.status()
-      return { state: state.phase === 'idle' ? 'connected-idle' : state.phase === 'blocked' ? 'cleanup-blocked' : 'picker-active',
-        ...(state.request ? { operation: state.request } : {}) }
+      let phase = 'picker-active'
+      if (state.phase === 'idle') phase = 'connected-idle'
+      else if (state.phase === 'blocked') phase = 'cleanup-blocked'
+      return { state: phase, ...(state.request ? { operation: state.request } : {}) }
     },
     async start(request, mode) {
       if (lane.status().phase !== 'idle') throw new OperationFailure('BUSY', 'refused')

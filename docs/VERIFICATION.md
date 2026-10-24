@@ -1,5 +1,74 @@
 # Verification record
 
+## Pi Lens diagnostic cleanup
+
+An active scoped scan checked 44 project files. An explicit second scan covered 44 CommonJS/ESM runtime and fixture modules that the first scan did not fully cover. These counts overlap. They do not prove that every file is clean. Push-only servers could not confirm some results.
+
+The cleanup removes the three error-level patterns identified in owned code. Fixed licensed SVG icons now use XML parsing and native node replacement instead of HTML assignment. Malformed package JSON now reports its relative filename and retains the original parse error as its cause. File-read errors and nonzero failure behavior remain intact.
+
+Other changes remove two unused imports, make the input guard's Boolean result explicit, and initialize the delivery-promise slot. Cancellation still waits for every tracked job through `Promise.allSettled` with the job set. Console value formatting and picker-status selection no longer use nested conditional expressions. Reverse overlay cleanup now uses a non-mutating array operation.
+
+The new SVG regression checks namespaces, view boxes, paths, accessible presentation, annotation counts, and cleanup. The malformed-JSON regression first failed without the filename context. Console regressions now also cover unserializable values, object descriptions, and undefined values.
+
+A fresh warning-level probe of the ten changed code/test files reports no errors and three retained warnings. One result remains unconfirmed by a push-only server. The visible-text warning is intentional: `innerText` excludes hidden product content. The other two warnings identify the same bounded diagnostic-clear flag at two scopes. Splitting this closed tool-schema flag into new APIs is not necessary. Type/style hints do not justify changes to validated input types, required Promise waits, module formats, or frozen PNG test bytes.
+
+No warning suppression, dependency, or public capability was added. Copied resources, upstream picker bytes, and synthetic catalogs remain unchanged. Capture and input guards retain their behavior.
+
+The focused presentation, package, adapter, and diagnostic suite passed all 74 tests. Main inspection of fictional dark/light screenshots at 390px and 1440px confirms that icons and layout retain their appearance. No owner-window operation was performed for this cleanup.
+
+Fresh mandatory runtime checks passed: `npm run build`, `npm run typecheck`, `npm run check:package`, and `npm test`. The full suite passed 219 tests, with the unchanged foreground walkthrough skipped. Independent source review remains separate from those checks. These results do not establish owner-window behavior, private-provider acceptance, or support for other platforms.
+
+## Footer navigation and translucent highlights
+
+The shared note footer now contains the original parent/child selection controls beside the details and delete actions. It no longer shows “Pi session.” The controls retain their handlers and accessible names. Element facts remain in the collapsible details region. Source-session identity and feedback delivery are unchanged.
+
+The hovered-element highlight now uses a 7% accent tint over transparency instead of an opaque panel-color mix. The selected marker outline retains its 7% transparent tint. Editor cards remain opaque with their original 6% accent surface mix. The change does not alter target styles, copied resources, pinned picker bytes, capture guards, or tool schemas.
+
+Two footer regressions first failed at 390px and 1280px. Six highlight regressions first measured full opacity in dark/light themes at 390px, 768px, and 1440px. The corrected focused presentation suite passed all 35 tests. A functional footer test also preserves the draft and screenshot choice through parent/child navigation and delivers one literal no-image note.
+
+Headless browser captures show a high-contrast pattern through both highlight states. The selected-note captures received visual inspection in both themes at all three widths. The desktop hover captures also received visual inspection. Controls remain inside the note footer, and the stationary details-toggle, history, theme contrast, and restoration tests pass. These are fictional browser fixtures, not owner-window or mobile-platform acceptance.
+
+The app-style source checker reported zero failures and eight unchanged warnings. Monospace applies to literal code metadata. Shadows apply to overlay popovers or explicit shadow resets. No suppression was added. An active diagnostic probe reported two unchanged fixed SVG/template `innerHTML` pattern findings, with no new data flow. The compiler check remains separate.
+
+The full-page shell inspector does not apply to this bounded overlay adjustment.
+
+The first mandatory run passed build and typecheck, then stopped at the old integrity hash for the owned stylesheet. The manifest now records only the approved stylesheet bytes. All other fixed resources and catalog identities remain unchanged.
+
+Fresh runtime checks passed for this section:
+
+- `npm run build` — passed.
+- `npm run typecheck` — passed.
+- `npm run check:package` — passed: 30 fixed resources and 96 relative imports in 85 source files.
+- `npm test` — 217 passed, with one unchanged foreground walkthrough skipped.
+
+Independent source review is separate from these runtime checks. Earlier sections describe their original runtime bytes.
+
+## OpenChamber development adapter — October 23, 2026
+
+The extension now supplies an explicit `openchamber` adapter for the bundled local UI in a built source checkout. Its ESM bootstrap preserves pre-ready protocol setup. It accepts the exact local application document in eligible root windows. It does not change product source, preload preferences, tool schemas, wire schemas, or the synthetic catalog.
+
+Fresh checks against these runtime bytes passed:
+
+| Command | Result |
+| --- | --- |
+| `npm run build` | Passed |
+| `npm run typecheck` | Passed |
+| `npm run check:package` | Passed: 30 fixed resources and 96 relative imports in 85 source files |
+| `npm test` | **208 passed, one existing foreground walkthrough skipped** |
+| Active LSP checks | No reported errors. Initial batch: seven files confirmed clean, six inconclusive. Fix batch: three confirmed clean, three inconclusive. The TypeScript compiler check passed separately. |
+
+New native regressions cover pre-ready custom-protocol startup, exact-document refusals, child-window refusal, guarded input, draft preservation, zero-capture None, verified crops, reload invalidation, explicit reconnect, and non-destructive detach. Actual-launcher terminal tests cover both routes. The OpenChamber fixture requests `app.exit()` during a capture that remains pending beyond the cleanup deadline. Revocation occurs first. Actual capture settlement precedes renderer destruction, the authenticated cleanup receipt, and normal process exit. A separate test preserves cancelled quit confirmation. Unit checks retain an exit block when cleanup rejects.
+
+The first focused run passed four tests and failed two test assertions. The fixes normalized macOS temporary paths and selected the root fixture window explicitly. The corrected focused run passed ten tests. Source inspection then identified OpenChamber's final `app.exit()` path. The adapter now delays that confirmed exit for actual bridge cleanup without a forced retry of a cancelled quit. The expanded focused run passed eleven tests. The first full suite passed 203 tests with the existing skip.
+
+Independent review then identified two lifecycle gaps: quit during post-ready product initialization could leave a registration, and a retained macOS window could disappear from discovery. Three new regressions reproduced those failures. The `will-quit` fallback now joins actual host cleanup when the product does not own the quit. A cancelled product quit still leaves the connection intact. After successful connection cleanup, the host also recognizes a product-cancelled native close and restores discovery of the same document. Old connections stay retired, and fresh references belong to the new connection.
+
+The final focused lifecycle run passed eighteen tests. It includes actual-launcher post-ready quit, rejected-cleanup blocking, and disconnected/connected retained-window close with explicit reconnect. The retained-window fixture emits an app activation event but remains hidden. It does not establish real Dock focus behavior. The repeated build, typecheck, package check, and full suite then passed against the corrected runtime bytes.
+
+A separate live startup used unchanged OpenChamber 2.5.1 source at commit `1a16762347640487da76d8158027a1678d5059ca`. It used the extension's pinned Electron runtime, a fresh development home and profile, separate data directories, a minimal environment, and relay hosting disabled. OpenCode started from its staged local binary. Authenticated discovery returned one eligible OpenChamber target. No Pi connection, annotation, screenshot, provider sign-in, or UI operation occurred in that live instance. The first development launcher later exited normally with code zero. A second launch reused only that isolated development profile and loaded the corrected runtime. Authenticated discovery again returned exactly one eligible target, without a Pi connection or UI operation. The installed application and its data remained untouched.
+
+Native automation used hidden macOS windows, fictional data, private profiles, and offline Pi fixtures. OpenChamber retains its unsandboxed ESM preload, context isolation, and Node-disabled renderer. The fictional sample remains sandboxed. These results do not establish installed-app attachment, remote-host support, browser-panel support, foreground annotation acceptance, Windows, packaged apps, private accounts, or live-provider behavior. Independent source review remains separate from these runtime results. Earlier sections describe their original source versions.
+
 ## Catppuccin overlay and v0.1.1 — October 22, 2026
 
 The shared overlay now uses Catppuccin Mocha dark and Latte light. Peach, Blue and Mauve carry the approved Orbit identity into its controls. Annotation colors draw from a shuffled fourteen-accent cycle, avoid active colors on reuse, and remain attached to original cards through undo/redo and theme changes. Copied OpenChamber resources, the pinned picker, frozen catalogs, four paint exceptions and bridge/tool schemas are unchanged.

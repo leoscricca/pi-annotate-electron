@@ -19,11 +19,15 @@ function installPresentation(css, icons) {
     }
     return values
   }
+  const svg = name => {
+    const node = new DOMParser().parseFromString(icons[name], 'image/svg+xml').querySelector('svg')
+    node.setAttribute('aria-hidden', 'true')
+    return node
+  }
   const icon = (node, name, label) => {
-    node.innerHTML = icons[name]
+    node.replaceChildren(svg(name))
     node.setAttribute('aria-label', label)
     node.title = label
-    node.querySelector('svg').setAttribute('aria-hidden', 'true')
   }
   const button = (className, name, label) => {
     const node = document.createElement('button')
@@ -233,18 +237,16 @@ function installPresentation(css, icons) {
     for (const [selector, label] of [['.pi-note-expand', 'Expand to parent'], ['.pi-note-contract', 'Contract to child']]) {
       const control = card.querySelector(selector); icon(control, 'arrow-down-s', label); hierarchy.append(control)
     }
-    region.append(hierarchy)
     card.querySelector('.pi-note-body').append(region)
     const footer = document.createElement('footer'); footer.className = 'pi-cnc-footer'
     const screenshot = card.querySelector('.pi-note-screenshot')
     icon(screenshot, 'image-line', 'Add screenshot')
     const caption = document.createElement('span'); caption.className = 'pi-cnc-image-caption'; screenshot.append(caption)
-    const destination = document.createElement('span'); destination.className = 'pi-cnc-destination'; destination.textContent = 'Pi session'; destination.title = 'To the current Pi session · review only'
     const detailsButton = button('pi-cnc-details-toggle', 'code-s-slash-line', 'Show element details')
     detailsButton.setAttribute('aria-expanded', 'false'); detailsButton.setAttribute('aria-controls', region.id)
     detailsButton.addEventListener('click', () => toggleDetails(card))
     const remove = card.querySelector('.pi-note-close'); icon(remove, 'delete-bin-6-line', 'Delete annotation')
-    footer.append(screenshot, destination, detailsButton, remove); card.append(footer)
+    footer.append(screenshot, hierarchy, detailsButton, remove); card.append(footer)
     resizeObserver.observe(card)
     setScreenshot(card, defaultScreenshot)
     const dock = panel.getBoundingClientRect(), height = card.getBoundingClientRect().height
@@ -263,6 +265,7 @@ function installPresentation(css, icons) {
         if (!entry) continue
         const selector = card.querySelector('.pi-note-selector')
         const target = entry.element
+        // Rendered text excludes hidden product content.
         const name = target.getAttribute('aria-label') || target.innerText || target.tagName.toLowerCase()
         if (selector.textContent !== name.slice(0, 128)) selector.textContent = name.slice(0, 128)
         const screenshot = card.querySelector('.pi-note-screenshot')
@@ -332,7 +335,7 @@ function installPresentation(css, icons) {
       visibility.addEventListener('click', () => { visible = !visible; sync() })
       const undo = button('pi-cnc-undo', 'arrow-go-back-line', 'Undo annotation change'); undo.addEventListener('click', () => restore(-1))
       const redo = button('pi-cnc-redo', 'arrow-go-forward-line', 'Redo annotation change'); redo.addEventListener('click', () => restore(1))
-      const count = document.createElement('span'); count.className = 'pi-cnc-count'; count.innerHTML = icons['chat-3-line']; count.querySelector('svg').setAttribute('aria-hidden', 'true'); count.append(document.getElementById('pi-count'))
+      const count = document.createElement('span'); count.className = 'pi-cnc-count'; count.append(svg('chat-3-line'), document.getElementById('pi-count'))
       const close = document.getElementById('pi-close'); icon(close, 'close', 'Cancel annotation')
       tools.append(select, visibility, undo, redo, count, close)
       const send = document.getElementById('pi-submit'); icon(send, 'arrow-up-line', 'Send annotations')
@@ -364,7 +367,7 @@ function installPresentation(css, icons) {
     stop() {
       modalObserver?.disconnect(); modalObserver = null
       endDockDrag()
-      for (const node of layers.reverse()) {
+      for (const node of layers.toReversed()) {
         if (node.matches(':popover-open')) node.hidePopover()
         node.removeAttribute('popover')
       }

@@ -12,7 +12,17 @@ Historical host checks covered crops, camera-off notes, keyboard None, zero capt
 
 The extracted package uses an explicit external launcher, not an application import or build flag. Build the selected development app first. Start it through the [documented owner command](../README.md#start-a-development-app-with-explicit-opt-in).
 
-The launcher installs the private bridge and preload before the app entry executes. It pins a local renderer file inside the selected app root. The initial provider requires macOS, an unpackaged app, and Electron's default session. Ordinary app startup remains bridge-free. Packaged apps refuse development host setup.
+The file route installs the private bridge and preload before the app entry executes. It pins a local renderer file inside the selected app root. The provider requires macOS, an unpackaged app, and Electron's default session. Ordinary app startup remains bridge-free. Packaged apps refuse development host setup.
+
+The explicit `--adapter openchamber` route requires a built OpenChamber source checkout and `--profile`. It rejects custom entry and renderer arguments. It prepares the private bridge before Electron readiness. Its ESM entry imports OpenChamber's protocol setup before readiness and activates the preload at readiness. No app-source change is required.
+
+Only root windows with context isolation, Node integration disabled, and the default session qualify. The accepted document is `openchamber-ui://app/index.html`, with an optional hash. Splash, Mini Chat, child windows, other paths, query variants, and remote origins remain outside the target set. The adapter does not change the app's existing sandbox or preload configuration. OpenChamber uses an unsandboxed ESM preload. The fictional route remains sandboxed.
+
+OpenChamber retains its quit confirmation. After a confirmed quit, its final `app.exit()` waits for actual bridge work and cleanup. A cancelled quit does not trigger an adapter retry or detach. A `will-quit` fallback covers the interval before the product installs its quit handler. Unknown cleanup keeps the exit blocked.
+
+A macOS close can hide the main window rather than destroy it. The host first retires the connection and waits for actual cleanup. If the product then cancels the native close, the same document becomes discoverable again. Explicit reconnect creates a new binding and new references. The old binding stays retired.
+
+The supplied Electron profile does not isolate OpenCode accounts, backend settings, or inherited credentials. Use a separate development home and data directories for verification. The owner must still run `/annotate-electron connect` in the intended Pi session.
 
 Discovery exposes safe app and window identities, not page content. Other Electron processes do not become compatible merely because the owner can find them. A compatible protocol and an explicit target connection remain necessary.
 
@@ -51,7 +61,7 @@ The picker close button, Cancel, and Escape close only annotation controls. The 
 
 To release the connection, use `/annotate-electron disconnect`. To choose another window, disconnect before another `connect`.
 
-The picker verifies the pinned Pi Annotate asset and adds a fixed annotation-state compatibility hook with the local Electron Annotate presentation. An icon toolbar offers additive selection, show/hide annotations, undo, redo, the selected count and cancellation, beside a separate circular Send button. Notes retain their drag behavior and scoped OpenChamber tokens. A dash minimizes; a plus or numbered marker reopens; a bin deletes. Undo/redo restores added/deleted notes with original node identity, literal text and image choice, without replaying product input. Parent/child selection and element facts are in the collapsible details region. Its footer code icon stays stationary as details expand above it.
+The picker verifies the pinned Pi Annotate asset and adds a fixed annotation-state compatibility hook with the local Electron Annotate presentation. An icon toolbar offers additive selection, show/hide annotations, undo, redo, the selected count and cancellation, beside a separate circular Send button. Notes retain their drag behavior and scoped OpenChamber tokens. A dash minimizes; a plus or numbered marker reopens; a bin deletes. Undo/redo restores added/deleted notes with original node identity, literal text and image choice, without replaying product input. Parent/child selection controls remain visible in the footer beside the details and delete actions. Element facts stay in the collapsible details region. Its footer code icon stays stationary as details expand above it.
 
 Each note has a feedback field and its own screenshot button: Add screenshot when off, Element crop when on. In None mode, each note starts without an image. In Crop mode, each note starts with an element crop. Each new note uses the picker's initial choice, even after earlier notes change the shared mode.
 

@@ -1,5 +1,5 @@
 // Fixed hidden proof, not a general application launcher or control server.
-const { app, BrowserWindow, ipcMain, session } = require('electron')
+const { app, ipcMain, session } = require('electron')
 const fs = require('node:fs')
 const path = require('node:path')
 const { pathToFileURL } = require('node:url')

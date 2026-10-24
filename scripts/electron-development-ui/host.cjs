@@ -14,7 +14,7 @@ function documentUrl(value) {
   try { const url = new URL(value); url.hash = ''; return url.href }
   catch { return null }
 }
-async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, directory }) {
+async function prepareDevelopmentUi({ app, ipcMain, session, repositoryRoot, directory, label }) {
   if (app.isPackaged || process.platform !== 'darwin') throw new Error('DEV_UI_DEVELOPMENT_ONLY')
   const windows = new Map()
   const byContents = new Map()
@@ -25,7 +25,7 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
   let closing
   function trusted(state, sender, frame) {
     try {
-      return !stopped && state && !state.window.isDestroyed() && !state.contents.isDestroyed()
+      return !stopped && preload && state && !state.window.isDestroyed() && !state.contents.isDestroyed()
         && sender === state.contents && frame === state.contents.mainFrame
         && documentUrl(frame.url) === state.expected && documentUrl(state.contents.getURL()) === state.expected
     } catch { return false }
@@ -56,7 +56,7 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
   }
   try {
     ipcMain.handle(CHANNEL, renderer); installed = true
-    bridge = await createDevelopmentBridge({ directory,
+    bridge = await createDevelopmentBridge({ directory, label,
       targets: () => [...windows.values()].filter(state => !state.loading && !state.closing && current(state, state.generation))
         .map(state => ({ window: state.id, generation: state.generation, capabilities: [...CAPABILITIES] })),
       async openTarget(binding, emit) {
@@ -77,7 +77,6 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
         }
       },
     })
-    preload = session.defaultSession.registerPreloadScript({ type: 'frame', filePath: path.join(repositoryRoot, 'scripts/electron-development-ui/preload.cjs') })
   } catch (error) {
     if (installed) ipcMain.removeHandler(CHANNEL)
     if (preload) session.defaultSession.unregisterPreloadScript(preload)
@@ -85,6 +84,10 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
     throw error
   }
   const host = {
+    activate() {
+      if (stopped) throw new Error('DEV_UI_HOST_CLOSED')
+      preload ??= session.defaultSession.registerPreloadScript({ type: 'frame', filePath: path.join(repositoryRoot, 'scripts/electron-development-ui/preload.cjs') })
+    },
     registerWindow(window, target) {
       if (stopped) throw new Error('DEV_UI_HOST_CLOSED')
       const contents = window.webContents
@@ -98,13 +101,19 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
       }
       const loaded = () => { state.loading = false }
       const close = event => {
-        if (stopped || state.closeReady) return
+        if (stopped) return
+        if (state.closeReady) { state.closeEvent = event; return }
         event.preventDefault()
         if (state.closing) return
         state.closing = bridge.revoke(state.id, 'TARGET_CLOSED', { waitForSettlement: true })
         state.closing.then(() => {
           state.closeReady = true
-          if (!window.isDestroyed()) window.close()
+          if (!window.isDestroyed()) {
+            window.close()
+            if (!window.isDestroyed() && state.closeEvent?.defaultPrevented) {
+              state.closeReady = false; state.closing = undefined; state.closeEvent = undefined
+            }
+          }
         }, () => console.error('Development UI window close is blocked by unresolved owned cleanup.'))
       }
       const destroyed = () => {
@@ -128,7 +137,7 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
       if (!closing) {
         stopped = true
         ipcMain.removeHandler(CHANNEL)
-        session.defaultSession.unregisterPreloadScript(preload)
+        if (preload) session.defaultSession.unregisterPreloadScript(preload)
         for (const state of windows.values()) state.detach()
         windows.clear(); byContents.clear()
         closing = bridge.close({ waitForSettlement: true })
@@ -138,4 +147,9 @@ async function installDevelopmentUi({ app, ipcMain, session, repositoryRoot, dir
   }
   return host
 }
-module.exports = { installDevelopmentUi }
+async function installDevelopmentUi(options) {
+  const host = await prepareDevelopmentUi(options)
+  try { host.activate(); return host }
+  catch (error) { await host.close(); throw error }
+}
+module.exports = { installDevelopmentUi, prepareDevelopmentUi }

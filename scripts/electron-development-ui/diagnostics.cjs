@@ -33,8 +33,10 @@ async function startDiagnostics(frontend, isCurrent) {
       if (!['error', 'warning', 'assert'].includes(params.type) || !Number.isFinite(params.timestamp) || params.timestamp < since) return
       const args = Array.isArray(params.args) ? params.args : []
       if (args.length > 32) truncated.console = true
-      const value = args.slice(0, 32).map(arg => text('console', Object.hasOwn(arg, 'value')
-        ? (arg.value === null ? 'null' : arg.value) : arg.unserializableValue ?? arg.description ?? arg.type)).join(' ')
+      const value = args.slice(0, 32).map(arg => {
+        const raw = Object.hasOwn(arg, 'value') ? arg.value : arg.unserializableValue ?? arg.description ?? arg.type
+        return text('console', raw === null ? 'null' : raw)
+      }).join(' ')
       append('console', { kind: 'console', message: text('console', value), timestamp: Date.now(),
         ...location('console', params.stackTrace?.callFrames) })
     } else if (method === 'Log.entryAdded') {

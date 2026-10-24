@@ -11,4 +11,7 @@ export function installDevelopmentUi(options: {
   session: { defaultSession: Session }
   repositoryRoot: string
   directory?: string
+  label?: string
 }): Promise<DevelopmentUiHost>
+
+export function prepareDevelopmentUi(options: Parameters<typeof installDevelopmentUi>[0]): Promise<DevelopmentUiHost & { activate(): void }>

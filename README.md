@@ -28,7 +28,7 @@ The demo uses the included fictional sample in a hidden macOS Electron window. I
 
 ## Requirements and support
 
-Current support is **macOS development apps** with an existing main entry, a fixed local HTML renderer, Electron's default session, and the compatible external bootstrap. Use Node **24.22 or later** and an installed [Pi coding agent](https://pi.dev/).
+Current support is **macOS development apps** with an existing main entry, Electron's default session, and a compatible external bootstrap. The renderer must use a fixed local HTML file or the bundled local OpenChamber development UI. Use Node **24.22 or later** and an installed [Pi coding agent](https://pi.dev/).
 
 The launcher runs your development entry with the package's pinned Electron runtime. Build your target app first. Native modules must support that runtime. This release does not establish support for packaged apps, Windows, arbitrary running Electron processes, remote renderer URLs, or every Electron framework.
 
@@ -74,6 +74,27 @@ To try the fictional sample, run `npm run build`, then use the same command with
 
 The launcher installs the bridge before importing the app entry. Ordinary app startup advertises no bridge. An already-open app needs a manual restart through this launcher; connecting does not launch, restart, or reload it.
 
+## Start OpenChamber from source
+
+The OpenChamber adapter requires a built source checkout and an explicit development profile. It does not attach to the installed desktop app. Build the bundled UI and native dependencies with OpenChamber's own development scripts first.
+
+From this extension checkout, run:
+
+```sh
+npm run start:app -- \
+  --app "$OPENCHAMBER_ROOT" \
+  --adapter openchamber \
+  --profile "$DEVELOPMENT_PROFILE"
+```
+
+Set `OPENCHAMBER_ROOT` to the monorepo root. Set `DEVELOPMENT_PROFILE` to an approved development profile directory. Do not supply `--entry` or `--renderer` with this adapter. The adapter checks the expected package layout and built HTML asset. It uses the extension's pinned Electron runtime.
+
+The ESM bootstrap preserves OpenChamber's pre-ready protocol setup. The bridge accepts only `openchamber-ui://app/index.html` in root windows with the default session, context isolation, and Node integration disabled. Splash pages, Mini Chat, child windows, query variants, and other origins are not targets. Navigation revokes a connection and requires an explicit reconnect.
+
+The adapter selects the bundled UI and the supplied Electron profile. It does not change OpenChamber's preload or sandbox preferences. OpenChamber currently uses an unsandboxed ESM preload with context isolation and Node integration disabled. This differs from the sandboxed fictional sample.
+
+An Electron profile alone does not isolate backend settings, provider accounts, or environment credentials. Use a separate development home and data directories for an isolated run. Do not use a private account for verification. Ordinary OpenChamber startup remains bridge-free.
+
 ## Connect and annotate
 
 In the Pi session that should receive your feedback:
@@ -114,6 +135,7 @@ Two routes have different authority. **Attached development** connects to one ex
 | --- | --- |
 | Version 1 JSON messages over a private Unix-domain socket | Supported; mutually authenticated, same-user local discovery |
 | Explicit Electron bootstrap + fixed local HTML renderer | Supported on eligible macOS development apps |
+| OpenChamber source adapter + bundled local custom-protocol UI | Opt-in macOS development route with an explicit profile |
 | `annotate_electron` Pi tool | Annotation lifecycle, with a closed schema |
 | `electron_ui` Pi tool | Bounded snapshots, screenshots, input, and diagnostics |
 | Public CDP, WebSocket, HTTP app endpoints, MCP attachment | Not connection interfaces in this package |

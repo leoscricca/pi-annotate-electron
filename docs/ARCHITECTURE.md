@@ -8,7 +8,8 @@ Pi Annotate Electron links human feedback and bounded frontend operations to the
 | --- | --- |
 | `extensions/annotate-electron.ts` | Pi commands, closed tool schemas, source-session delivery |
 | `bin/launch.mjs` | Explicit app-root, entry and renderer selection; external launch; normal quit |
-| `scripts/electron-development-ui/external-bootstrap.cjs` | Install the bridge before app import without app-source edits |
+| `scripts/electron-development-ui/external-bootstrap.cjs` | Prepare the bridge before app import and coordinate normal quit |
+| `scripts/electron-development-ui/openchamber-main.mjs` | Hold Electron readiness until OpenChamber's pre-ready entry setup completes |
 | `host.cjs` | Bind eligible windows and lifecycle events |
 | `registry.cjs`, `connection.cjs` | Private discovery, mutual authentication, leases, transport and cleanup receipts |
 | `protocol.cjs` | Version 1 wire validation, exact fields, identity and limits |
@@ -30,11 +31,13 @@ Chrome annotation remains separate; this package does not replace `/annotate` or
 
 ## Startup and connection
 
-1. The launcher validates a trusted root, existing main entry and local renderer. It starts the pinned Electron runtime and installs the bridge before app import.
+1. The launcher validates a trusted root, existing main entry and local renderer. It starts the pinned Electron runtime and prepares the bridge before app import. The file route installs the preload after Electron readiness. The OpenChamber ESM route prepares the bridge before readiness, imports the app entry, and activates the preload at readiness.
 2. The host advertises eligible windows through private same-user registration. Ordinary app startup has no bridge. Connect never upgrades or restarts an existing process.
 3. Discovery authenticates compatible targets. Pi chooses among multiple windows and freshly verifies the selected identity.
-4. Connection installs fixed helpers in isolated world `1004`, retaining sandboxing, context isolation and a Node-disabled renderer. A verified connection starts the picker.
+4. Connection installs fixed helpers in isolated world `1004` without changing app security preferences. A verified connection starts the picker. The fictional sample retains its sandbox. OpenChamber retains its existing unsandboxed ESM preload, context isolation, and Node-disabled renderer.
 5. Submission delivers literal comments, bounded element facts and optional verified crops to the source Pi session. Picker readiness and delivery remain separate results.
+
+The explicit `openchamber` adapter pins the expected source layout, bundled HTML asset, and a supplied development profile. Only root windows in the default session can become targets. Their context isolation must be enabled and Node integration disabled. The accepted document is exactly `openchamber-ui://app/index.html`, apart from its hash. Other paths, query variants, child windows, and remote origins do not qualify. The authenticated socket and UI wire schema remain unchanged.
 
 Electron and its helpers live outside the launcher's terminal signal group. Terminal signals request normal app quit over the retained parent channel. The launcher waits for actual exit; there is no forced-termination deadline.
 

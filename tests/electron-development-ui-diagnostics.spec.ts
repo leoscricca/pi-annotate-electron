@@ -13,14 +13,15 @@ function transport() {
 test('diagnostics preserve source facts but never project network headers, cookies or bodies', async () => {
   const f = transport(); const diagnostics = await startDiagnostics(f.frontend, () => true)
   try {
-    f.emit('Runtime.consoleAPICalled', { type: 'error', timestamp: Date.now(), args: [{ value: 'Literal console error /tmp/visible.js' }, { value: null }, { value: false }, { value: 0 }],
+    f.emit('Runtime.consoleAPICalled', { type: 'error', timestamp: Date.now(), args: [{ value: 'Literal console error /tmp/visible.js' }, { value: null }, { value: false }, { value: 0 },
+      { unserializableValue: 'NaN' }, { description: 'console object' }, { type: 'undefined' }],
       stackTrace: { callFrames: [{ url: 'cnc-console.js', lineNumber: 3, columnNumber: 6 }] } })
     f.emit('Runtime.exceptionThrown', { timestamp: Date.now(), exceptionDetails: { text: 'Uncaught', exception: { description: 'Error: fixture exception' },
       stackTrace: { callFrames: [{ url: 'cnc-exception.js', lineNumber: 8, columnNumber: 2 }] } } })
     f.emit('Network.requestWillBeSent', { requestId: 'request1', wallTime: Date.now() / 1000 + 1, type: 'Fetch',
       request: { url: 'https://fixture.invalid/failed', headers: { Authorization: 'discarded-header', Cookie: 'discarded-cookie' }, postData: 'discarded-body' } })
     f.emit('Network.responseReceived', { requestId: 'request1', response: { status: 503, headers: { 'Set-Cookie': 'discarded-response-cookie' }, body: 'discarded-response-body' } })
-    expect(diagnostics.read('console')).toEqual({ truncated: false, items: [{ kind: 'console', message: 'Literal console error /tmp/visible.js null false 0',
+    expect(diagnostics.read('console')).toEqual({ truncated: false, items: [{ kind: 'console', message: 'Literal console error /tmp/visible.js null false 0 NaN console object undefined',
       timestamp: expect.any(Number), source: 'cnc-console.js', line: 4, column: 7 }] })
     expect(diagnostics.read('exception')).toEqual({ truncated: false, items: [{ kind: 'exception', message: 'Error: fixture exception',
       stack: 'Error: fixture exception', timestamp: expect.any(Number), source: 'cnc-exception.js', line: 9, column: 3 }] })

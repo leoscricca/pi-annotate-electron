@@ -15,7 +15,7 @@
     "design/licenses/pi-annotate-MIT.txt": "2d20dfacd9742706e564470dc77438608a1e54b0ed46959f080709389209093c",
     "tests/fixtures/legacy-synthetic-catalog.json": "ea49a79354e47e3c0e0420ffa662477dbba955b3cf4221391822358a06fc808c",
     "scripts/electron-annotations/content-policy.js": "408fbeda1454f7d43b874a96ef1e4dfb5f3b503b8f85b8bbdae6c65b2704db36",
-    "scripts/electron-annotations/presentation.css": "4e16dc117a096da59ee20581692c06ce85f59f7fa1eb9418a6f3d567def9d2dd",
+    "scripts/electron-annotations/presentation.css": "ebf358bc055d8cd9d6234f166eddf0a54986e632cac7b23d6539556a40098ce1",
     "tests/fixtures/sample-synthetic-states.json": "64070e7a63a754e696ac963778011fac959f21f00be9ff3864ba5fc70705acec",
     "design/icons/add-line.svg": "b03a98dbb2f1d4c1aed7987ce4be58b6af4b4be8af47b08aadb77c4a35d6a645",
     "design/icons/arrow-go-back-line.svg": "03aace204af1b57c5d9de601cb83a53714ad26fd4fb472ede99fa09faa421b80",

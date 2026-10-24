@@ -107,8 +107,7 @@
 .pi-note-card .pi-cnc-footer { display: flex; flex-shrink: 0; align-items: center; gap: 8px; padding: 12px 16px; }
 .pi-note-card .pi-note-screenshot { opacity: 1; width: auto; gap: 6px; font-size: var(--text-micro); white-space: nowrap; }
 .pi-note-card .pi-note-screenshot.active { color: var(--pi-control-blue); background: transparent; }
-.pi-note-card .pi-cnc-destination { margin-left: auto; color: var(--surface-muted-foreground); font-size: var(--text-micro); white-space: nowrap; }
-.pi-note-card .pi-cnc-details-toggle { margin-left: auto; flex-shrink: 0; transform: none; }
+.pi-note-card .pi-cnc-details-toggle { flex-shrink: 0; transform: none; }
 .pi-note-card .pi-note-close { flex-shrink: 0; }
 .pi-note-card .pi-note-close:hover { color: var(--status-error-text); }
 .pi-note-card .pi-cnc-details {
@@ -119,7 +118,7 @@
 .pi-note-card .pi-cnc-details dl { display: grid; grid-template-columns: 62px minmax(0,1fr); gap: 10px 12px; margin: 0; }
 .pi-note-card .pi-cnc-details dt { color: var(--surface-muted-foreground); font-size: var(--text-micro); }
 .pi-note-card .pi-cnc-details dd { margin: 0; overflow-wrap: anywhere; color: var(--surface-foreground); font: var(--text-micro)/1.5 var(--font-mono); }
-.pi-note-card .pi-cnc-hierarchy { display: flex; justify-content: flex-end; gap: 4px; margin-top: 6px; }
+.pi-note-card .pi-cnc-hierarchy { display: flex; flex-shrink: 0; align-items: center; gap: 4px; margin-left: auto; }
 .pi-note-card .pi-note-expand svg { transform: rotate(180deg); }
 .pi-note-card.pi-cnc-minimized .pi-note-body,.pi-note-card.pi-cnc-minimized .pi-cnc-footer { display: none; }
 .pi-note-card.pi-cnc-minimized .pi-note-header { padding-top: 8px; padding-bottom: 8px; }
@@ -128,11 +127,10 @@
 #pi-markers .pi-marker-badge { width: 22px; height: 22px; font: var(--text-micro)/1.45 var(--font-sans); }
 #pi-markers .pi-marker-outline { border-color: var(--pi-note-accent,var(--primary-text)); background: color-mix(in srgb,var(--pi-note-accent,var(--primary-text)) 7%,transparent); }
 #pi-markers .pi-marker-badge { background: var(--surface-elevated); color: var(--pi-badge-text,var(--pi-note-accent,var(--primary-text))); border: 1px solid var(--pi-note-accent,var(--primary-text)); }
-#pi-highlight { transition: none; }
+#pi-highlight { background: color-mix(in srgb,var(--primary-text) 7%,transparent); transition: none; }
 body:has(.pi-note-card:focus-within) #pi-tooltip { visibility: hidden; }
 svg.pi-connectors { display: none; }
 @media (max-width:520px) {
-  .pi-note-card .pi-cnc-destination { display: none; }
   #pi-panel .pi-cnc-tools { gap: 2px; padding: 6px; }
   #pi-panel .pi-cnc-toolbar { gap: 6px; }
 }
